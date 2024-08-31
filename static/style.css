@@ -4,7 +4,7 @@
 }
 
 body{
-    background-image: url('/static/images/bg1.jpg');
+    background-color: #A89B8C;
     background-size: cover; /* Adjusts image size to cover the entire page */
     background-position: center; /* Centers the image */
      /* Prevents image from repeating */

@@ -1,6 +1,7 @@
 import csv
 import pandas as pd
-import operator
+import random
+from datetime import datetime
 import plotly.graph_objects as go
 import plotly.express as px
 from io import StringIO
@@ -258,59 +259,71 @@ def download_csv_report(request):
 
     return response
 
+def parse_date(date_str, format_str='%m/%d/%Y'):
+    """Convert date string to datetime.date object based on the format."""
+    try:
+        return datetime.strptime(date_str, format_str).date()
+    except ValueError:
+        return None  # Return None if the date string is invalid
+
+
+def random_color():
+    """Generate a random color in hexadecimal format."""
+    return "#{:06x}".format(random.randint(0, 0xFFFFFF))
 
 def checkout_chart_view(request):
-    # Get selected name from query parameters
+    # Get selected name and date range from query parameters
     selected_name = request.GET.get('name', '')
+    start_date_str = request.GET.get('start_date', '')
+    end_date_str = request.GET.get('end_date', '')
+
+    # Parse the dates based on the format
+    start_date = parse_date(start_date_str)
+    end_date = parse_date(end_date_str)
 
     # Get distinct names for dropdown
     names = CheckedOutBy.objects.values_list('name', flat=True).distinct()
 
-    # Query the checkouts with filtering based on the selected name
+    # Build query filters
+    filters = {}
     if selected_name:
-        checkouts = Checkout.objects.filter(
-            checked_out_by__name=selected_name
-        ).annotate(
-            checkout_date_only=F('checkout_date__date'),
-            product_cost=F('inventory_item__product__cost')
-        ).values(
-            'checkout_date_only',
-            'checked_out_by__name'
-        ).annotate(
-            total_quantity=Sum('quantity'),
-            total_cost=Sum(F('quantity') * F('product_cost'))
-        ).order_by('checkout_date_only')
-    else:
-        checkouts = Checkout.objects.annotate(
-            checkout_date_only=F('checkout_date__date'),
-            product_cost=F('inventory_item__product__cost')
-        ).values(
-            'checkout_date_only',
-            'checked_out_by__name'
-        ).annotate(
-            total_quantity=Sum('quantity'),
-            total_cost=Sum(F('quantity') * F('product_cost'))
-        ).order_by('checkout_date_only')
+        filters['checked_out_by__name'] = selected_name
+    if start_date:
+        filters['checkout_date__date__gte'] = start_date
+    if end_date:
+        filters['checkout_date__date__lte'] = end_date
 
-    # Generate a color palette based on the number of unique names
+    # Query the checkouts with filtering based on the selected name and date range
+    checkouts = Checkout.objects.filter(**filters).annotate(
+        checkout_date_only=F('checkout_date__date'),
+        product_cost=F('inventory_item__product__cost')
+    ).values(
+        'checkout_date_only',
+        'checked_out_by__name'
+    ).annotate(
+        total_quantity=Sum('quantity'),
+        total_cost=Sum(F('quantity') * F('product_cost'))
+    ).order_by('checkout_date_only')
+
+    # Generate random colors for each unique name
     unique_names = set(checkout['checked_out_by__name'] for checkout in checkouts)
-    color_palette = px.colors.qualitative.Plotly[:len(unique_names)]
-    color_map = dict(zip(unique_names, color_palette))
+    color_map = {name: random_color() for name in unique_names}
 
     # Create the Plotly figure
     fig = go.Figure()
 
     # Add a bar chart trace for each name
     for name in unique_names:
+        marker_color = color_map[name]
         name_checkouts = [c for c in checkouts if c['checked_out_by__name'] == name]
         dates = [c['checkout_date_only'] for c in name_checkouts]
         quantities = [c['total_quantity'] for c in name_checkouts]
-        
+
         fig.add_trace(go.Bar(
             x=dates,
             y=quantities,
             name=name,
-            marker_color=color_map[name]
+            marker_color=marker_color
         ))
 
     # Update layout
@@ -329,5 +342,7 @@ def checkout_chart_view(request):
     return render(request, 'checkout_chart.html', {
         'chart_html': chart_html,
         'names': names,
-        'selected_name': selected_name
+        'selected_name': selected_name,
+        'start_date': start_date_str,
+        'end_date': end_date_str
     })
