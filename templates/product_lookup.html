@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Product Lookup: {{ object.name }}{% endblock %}
+
+{% block content %}
+    <div>
+    <h3 class="display-6">{{ object.name }}</h3>
+    <table class = "table">
+        <thead class="thead-dark">
+    <tr>
+        <th>Vendor:</th>
+        <th>Cost:</th>
+        <th>Minimum Order Quantity:</th>
+        <th>Description:</th>
+        <th>Order Method:</th>
+        <th>Safety Stock:</th>
+    </tr>
+    </thead>
+    <tr>
+        <td>{{ object.vendor }}</td>
+        <td>{{ object.cost }}</td>
+        <td>{{ object.min_order_qty }}</td>
+        <td>{{ object.description }}</td>
+        <td>{{ object.order_method }}</td>
+        <td>{{ object.safety_stock }}</td>
+
+    </tr>
+    </table>
+            <h2>Inventory</h2>
+    <ul class ="list-group">
+        {% for inventory_item in inventory_items %}
+        <li class="list-group-item">
+            <strong>Warehouse : {{ inventory_item.distribution_center }}</strong>
+            <br>Stock Location: {{ inventory_item.stock_location }}
+            <br>Stock Location Level: {{ inventory_item.stock_loc_level }}
+            <br>Quantity: {{ inventory_item.quantity }}
+        </li>
+        {% empty %}
+        <li>No inventory available.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

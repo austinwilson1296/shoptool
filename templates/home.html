@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Home Page{% endblock %}
+
+{% block content %}
+
+<div class="container pt-3">
+    <div class="row">
+        <!-- Left column: Search and Table (spans 6 columns) -->
+        <div class="col-md-6">
+            <!-- Search Input -->
+            <div class="mb-3">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="inputGroup-sizing-default">Search For Products</span>
+                    </div>
+                    <input type="text" id="searchBar" class="form-control" placeholder="Enter Product Name">
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-responsive">
+                <table id="tableData" class="table table-bordered border-dark table-link table-hover table-sm">
+                    <thead>
+                        <tr>
+                            <th class="table-dark">Distribution Center</th>
+                            <th class="table-dark">Product</th>
+                            <th class="table-dark">Quantity</th>
+                            <th class="table-dark">Stock Location</th>
+                            <th class="table-dark">Stock Location Level</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inventory_item in object_list %}
+                            {% if inventory_item.quantity > 0 %}
+                                <tr>
+                                    <td>{{ inventory_item.distribution_center }}</td>
+                                    <td><a href="{{ inventory_item.product.get_absolute_url }}">{{ inventory_item.product }}</a></td>
+                                    <td>{{ inventory_item.quantity }}</td>
+                                    <td>{{ inventory_item.stock_location }}</td>
+                                    <td>{{ inventory_item.stock_loc_level }}</td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Right column: Additional News and Information (spans 6 columns) -->
+        <div class="col-md-6">
+            <div class="p-3">
+                <h2>Distribution Center Quantities and Costs</h2>
+                <table class="table">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Distribution Center</th>
+                        <th scope="col">Total Quantity</th>
+                        <th scope="col">Total Cost</th> <!-- Added this header for cost -->
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for center, data in center_quantities.items %}
+                    <tr>
+                        <td>{{ center }}</td>
+                        <td>{{ data.total_quantity }}</td> <!-- Updated to reference total_quantity -->
+                        <td>${{ data.total_cost }}</td> <!-- Updated to reference total_cost -->
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3">No distribution centers found.</td> <!-- Updated colspan to 3 -->
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <h2 style="color:white">Shop Supply Dashboard</h2>
+                <p>Important information and links!</p>
+                <!-- You can add more content here like news articles, updates, etc. -->
+                <ul>
+                    <li><a class="homenav" href="https://www.ashleydirect.com/SiteLogin/Forms/Login.aspx">Ashley Direct</a></li>
+                    <li><a class="homenav" href="https://broadriverfurniture.sharepoint.com/:x:/s/OPX/EVPQKS6In6hMnVxlFx0qEU8Bp0VDdM2rJBuQbR4w4jYVvg?e=RReyAt">Supply Expenses Report</a></li>
+                    <li><a class="homenav" href=https://broadriverfurniture.sharepoint.com/sites/WISERe-Imagined/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FWISERe%2DImagined%2FShared%20Documents%2FQuality%20Control&viewid=a26a857e%2D28e7%2D4ef3%2Dbeb6%2D4a1409065c7e>WISE</a></li>
+                    <li><a class="homenav" href=https://broadriverfurniture.sharepoint.com/sites/OperationalExcellence/SitePages/QC-Shop.aspx>OPX QC Page</a></li>
+                </ul>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('searchBar').addEventListener('keyup', function() {
+        var searchQuery = this.value.toLowerCase();
+        var tableRows = document.querySelectorAll('#tableData tbody tr');
+
+        tableRows.forEach(function(row) {
+            var rowText = row.textContent.toLowerCase();
+            row.style.display = rowText.includes(searchQuery) ? '' : 'none';
+        });
+    });
+</script>
+
+{% endblock %}

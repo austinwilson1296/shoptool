@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Supply Levels{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1>Inventory Supply Levels <strong>{{ center.name }}</strong></h1>
+</br>
+        <form method="get" class="form-inline mb-3">
+            <div class="form-group mr-3">
+                <label for="vendor" class="mr-2">Filter by Vendor:</label>
+                <select name="vendor" id="vendor" class="form-control" onchange="this.form.submit()">
+                    <option value="">All Vendors</option>
+                    {% for vendor in vendors %}
+                        <option value="{{ vendor.id }}" {% if vendor.id|stringformat:"s" == request.GET.vendor %}selected{% endif %}>
+                            {{ vendor.name }}
+                        </option>
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group mr-3">
+                <label class="mr-2" for="insufficient">Show Insufficient Only:</label>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" name="insufficient" id="insufficient" value="1" {% if show_insufficient %}checked{% endif %} onchange="this.form.submit()">
+                </div>
+            </div>
+        </form>
+</br>
+         <a href="{% url 'inventory_comparison' abbreviation=center.storis_Abbreviation %}?export=1" class="btn btn-primary">Export CSV</a>
+        </br>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Vendor</th>
+                    <th>Total Quantity</th>
+                    <th>Safety Stock</th>
+                    <th>Status</th>
+                    <th>Amount Order</th>
+                    <th>Item Total Cost</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in product_data %}
+                    <tr>
+                        <td>{{ item.product.name }}</td>
+                        <td>{{ item.vendor.name }}</td>
+                        <td>{{ item.total_quantity }}</td>
+                        <td>{{ item.safety_stock }}</td>
+                        <td class="{% if item.status == 'Sufficient' %}sufficient{% else %}insufficient{% endif %}">
+                            {{ item.status }}
+                        </td>
+                        <td>
+                            {% if item.status == 'Insufficient' %}
+                                {{ item.amount_order }}
+                            {% else %}
+                                Do Not Order
+                            {% endif %}
+                        </td>
+                        <td>${{ item.total_cost }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8">No products found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+

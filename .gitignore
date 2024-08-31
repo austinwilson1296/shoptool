@@ -1,0 +1,7 @@
+db.sqlite3
+Dockerfile
+fly.toml
+mysite.log
+Procfile
+VENDOR_IMPORT.xlsx
+.env

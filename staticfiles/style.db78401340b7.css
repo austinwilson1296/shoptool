@@ -1,0 +1,68 @@
+.nav-link{
+    color: white;
+    font-size: 10px;
+}
+
+body{
+    background-image: url("/static/images/bg2.64d97726b95e.jpg");
+    background-size: cover; /* Adjusts image size to cover the entire page */
+    background-position: center; /* Centers the image */
+     /* Prevents image from repeating */
+    color: black;
+    font-weight:bold;
+    font-family: "Times New Roman", Times, serif;
+}
+
+th,td {
+    color: black;
+    font-weight: bold;
+    font-size: 13px;
+    width:0.1%;
+    white-space: nowrap;
+}
+table{
+background:#FCF9ED;
+}
+
+        .navbar-brand img {
+            height: 40px; /* Adjust the height of the image */
+            width: auto;  /* Maintain aspect ratio */
+        }
+        .navbar-nav .nav-link {
+            color: white; /* Text color */
+        }
+        .navbar-nav .nav-link:hover {
+            color: #ffd700; /* Hover color */
+        }
+
+  .input-group {
+            margin-bottom: 1rem; /* Margin below the input group */
+        }
+        .input-group-text {
+            background-color: #f8f9fa; /* Light background for the text */
+            border: 1px solid #ced4da; /* Border color for better visibility */
+        }
+        #searchBar {
+            border-radius: 0; /* Remove border radius for a cleaner look */
+        }
+
+          table a {
+            color: #2D080A; /* Bright Yellow */
+            text-decoration: none; /* Remove underline */
+        }
+        table a:hover {
+            color: #00ffff; /* Light Cyan on hover */
+            text-decoration: underline; /* Underline on hover for clarity */
+        }
+
+        .sufficient{
+        color:green
+        }
+         .insufficient{
+        color:red;
+        }
+
+        .homenav{
+           color: #3454D1; /* Bright Yellow */
+            text-decoration: none; /* Remove underline */
+        }

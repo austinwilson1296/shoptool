@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Product{% endblock %}
+{% block content %}
+{%load crispy_forms_tags %}
+<div class="col-md-8">
+<div class="container mt-0 mb-3 ">
+  <h2>Create Product</h2>
+  <form method="post" class="form-group">
+    {% csrf_token %}
+   {{ form|crispy }}
+    <button type="submit" class="btn btn-primary">Save</button>
+  </form>
+    </br>
+</div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Include Select2 CSS and JS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+    $('.select2').select2(); // Initialize Select2 on elements with class 'select2'
+  });
+</script>
+{% endblock %}

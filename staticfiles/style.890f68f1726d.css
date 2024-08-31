@@ -1,0 +1,11 @@
+.nav-link{
+    color: white;
+    font-size: 10px;
+}
+
+body{
+    background-image: url("/static/images/bg.c8b31907bb25.jpg");
+    background-size: cover; /* Adjusts image size to cover the entire page */
+    background-position: center; /* Centers the image */
+    background-repeat: no-repeat; /* Prevents image from repeating */
+}
