@@ -27,7 +27,8 @@
 
 <script>
   $(document).ready(function() {
-      $('.select2').select2();
+    $('#id_checked_out_by').select2();
+    $('#id_inventory_item').select2();
 
       $('#id_center').on('change', function() {
           var centerId = $(this).val();

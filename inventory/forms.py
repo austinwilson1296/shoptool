@@ -9,8 +9,17 @@ class CheckoutForm(forms.ModelForm):
         queryset=Center.objects.all(),
         empty_label="Select Center"
     )
-    checked_out_by = forms.ModelChoiceField(queryset=CheckedOutBy.objects.all(), empty_label=None)
-    inventory_item = forms.ModelChoiceField(queryset=Inventory.objects.none(), empty_label=None)
+    checked_out_by = forms.ModelChoiceField(
+        queryset=CheckedOutBy.objects.all(),
+        empty_label=None,
+        widget=forms.Select(attrs={'class': 'select2'})  # Add 'select2' class
+    )
+    inventory_item = forms.ModelChoiceField(
+        queryset=Inventory.objects.none(),
+        empty_label=None,
+        widget=forms.Select(attrs={'class': 'select2'})  # Add 'select2' class
+    )
+
 
     class Meta:
         model = Checkout
