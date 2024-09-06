@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 from io import StringIO
 from django.shortcuts import render,redirect, get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse,JsonResponse
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView
 from django.urls import reverse_lazy
@@ -109,12 +109,32 @@ class CheckoutCreateView(CreateView):
     success_url = reverse_lazy('checkout_create')
 
     def form_valid(self, form):
-        # The form's save method handles the transaction and updates
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        # Handle form errors
-        return super().form_invalid(form)
+        return self.render_to_response(self.get_context_data(form=form))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if 'form' not in context:
+            context['form'] = self.get_form()
+        return context
+
+def get_inventory_items(request):
+    center_id = request.GET.get('center')
+    if center_id:
+        # Fetch the inventory items with additional fields
+        inventory_items = Inventory.objects.filter(distribution_center_id=center_id).values(
+            'id',
+            'product__name',
+            'stock_location',
+            'stock_loc_level',
+            'quantity'
+        )
+        print('Inventory items:', list(inventory_items))  # Debugging statement
+        return JsonResponse({'items': list(inventory_items)})
+    return JsonResponse({'items': []})
+
 
 
 def supply_levels(request, abbreviation):

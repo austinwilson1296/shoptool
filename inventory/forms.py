@@ -1,63 +1,32 @@
 # forms.py
 from django import forms
 from django.db import transaction
-from .models import Checkout, Inventory, CheckedOutBy
+from .models import Checkout, Inventory, CheckedOutBy,Center
 
 
 class CheckoutForm(forms.ModelForm):
+    center = forms.ModelChoiceField(
+        queryset=Center.objects.all(),
+        empty_label="Select Center"
+    )
     checked_out_by = forms.ModelChoiceField(queryset=CheckedOutBy.objects.all(), empty_label=None)
-    inventory_item = forms.ModelChoiceField(queryset=Inventory.objects.all(), empty_label=None)
+    inventory_item = forms.ModelChoiceField(queryset=Inventory.objects.none(), empty_label=None)
 
     class Meta:
         model = Checkout
-        fields = ['inventory_item', 'checked_out_by', 'quantity']
+        fields = ['center', 'inventory_item', 'checked_out_by', 'quantity']
 
-    def clean_quantity(self):
-        quantity = self.cleaned_data.get('quantity')
-        inventory_item = self.cleaned_data.get('inventory_item')
-
-        # Access the related Inventory item
-        inventory = Inventory.objects.filter(id=inventory_item.id).first()
-
-        if not inventory:
-            raise forms.ValidationError('Invalid inventory item.')
-
-        if quantity > inventory.quantity:
-            raise forms.ValidationError('Not enough inventory available at the specified location and level.')
-
-        return quantity
-
-    def save(self, commit=True):
-        # Get cleaned data
-        cleaned_data = self.cleaned_data
-        inventory_item = cleaned_data.get('inventory_item')
-        quantity = cleaned_data.get('quantity')
-        checked_out_by = cleaned_data.get('checked_out_by')
-
-        # Update the inventory and save the checkout
-        with transaction.atomic():
-            # Lock the inventory item
-            inventory = Inventory.objects.select_for_update().get(id=inventory_item.id)
-
-            if quantity > inventory.quantity:
-                raise forms.ValidationError('Not enough inventory available at the specified location and level.')
-
-            # Update inventory quantity
-            inventory.quantity -= quantity
-            inventory.save()
-
-            # Save the checkout
-            checkout = super().save(commit=False)
-            checkout.checked_out_by = checked_out_by
-            if commit:
-                checkout.save()
-
-        return checkout
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Apply the select2 class to the product field
-        self.fields['inventory_item'].widget.attrs.update({'class': 'select2'})
-        self.fields['checked_out_by'].widget.attrs.update({'class': 'select2'})
+        if 'center' in self.data:
+            try:
+                center_id = int(self.data.get('center'))
+                self.fields['inventory_item'].queryset = Inventory.objects.filter(distribution_center_id=center_id)
+            except (ValueError, TypeError):
+                self.fields['inventory_item'].queryset = Inventory.objects.none()
+        elif self.instance.pk:
+            self.fields['inventory_item'].queryset = Inventory.objects.filter(distribution_center=self.instance.center)
+
 
 
 class ProductForm(forms.ModelForm):
