@@ -109,7 +109,26 @@ class CheckoutCreateView(CreateView):
     success_url = reverse_lazy('checkout_create')
 
     def form_valid(self, form):
-        return super().form_valid(form)
+        # First, call the parent method to handle form saving
+        response = super().form_valid(form)
+            
+        # Get the cleaned data from the form
+        center = form.cleaned_data['center']
+        inventory_item = form.cleaned_data['inventory_item']
+        quantity = form.cleaned_data['quantity']
+            
+        # Update the inventory item quantity
+        inventory_item = Inventory.objects.get(id=inventory_item.id)
+            
+        if inventory_item.quantity >= quantity:
+                inventory_item.quantity -= quantity
+                inventory_item.save()
+                
+        else:
+                form.add_error('quantity', 'Insufficient inventory for the selected item.')
+                return self.form_invalid(form)
+
+        return response
 
     def form_invalid(self, form):
         return self.render_to_response(self.get_context_data(form=form))
@@ -131,7 +150,7 @@ def get_inventory_items(request):
             'stock_loc_level',
             'quantity'
         )
-        print('Inventory items:', list(inventory_items))  # Debugging statement
+          
         return JsonResponse({'items': list(inventory_items)})
     return JsonResponse({'items': []})
 
