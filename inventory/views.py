@@ -245,7 +245,7 @@ def supply_levels(request, abbreviation):
         sorted_csv_file = sorted_csv_buffer.getvalue()
 
         # Return CSV as response
-        response = HttpResponse(csv_file, content_type='text/csv')
+        response = HttpResponse(sorted_csv_file, content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="Supply_Order_{center.name}.csv"'
 
 
