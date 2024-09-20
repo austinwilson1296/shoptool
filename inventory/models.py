@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.urls import reverse
+from django.contrib.auth.models import User
 
 
 class Product(models.Model):
@@ -26,6 +27,10 @@ class Center(models.Model):
 
     def __str__(self):
         return self.storis_Abbreviation
+    
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    distribution_center = models.ForeignKey(Center,on_delete=models.SET_NULL, null=True)
 
 
 class Vendor(models.Model):

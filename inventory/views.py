@@ -7,7 +7,8 @@ import plotly.express as px
 from io import StringIO
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render,redirect, get_object_or_404
-from django.http import HttpResponse,JsonResponse
+from django.http import HttpResponse,JsonResponse,HttpResponseForbidden
+from django.core.exceptions import ValidationError
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView
 from django.urls import reverse_lazy
@@ -16,7 +17,7 @@ from django.db.models import Sum, F, FloatField, ExpressionWrapper
 from django.template import Context,Engine
 from django.template.loader import render_to_string
 from .forms import CheckoutForm, ProductForm, FilteredCheckoutForm
-from .models import Inventory, Product, Checkout, CheckedOutBy, Center,Vendor
+from .models import Inventory, Product, Checkout, CheckedOutBy, Center,Vendor,UserProfile
 
 
 class HomePageView(LoginRequiredMixin, ListView):
@@ -81,6 +82,12 @@ class ProductCreateView(LoginRequiredMixin,CreateView):
         stock_location = form.cleaned_data['stock_location']
         stock_loc_level = form.cleaned_data['stock_loc_level']
 
+        user_center = self.request.user.userprofile.distribution_center
+
+        if distribution_center != user_center:
+            form.add_error('distribution_center', ValidationError("You are not authorized to perform this action in this distribution center."))
+            return self.form_invalid(form)
+
         # Find existing inventory record
         existing_inventory = Inventory.objects.filter(
             distribution_center=distribution_center,
@@ -120,6 +127,13 @@ class CheckoutCreateView(LoginRequiredMixin,CreateView):
             
         # Update the inventory item quantity
         inventory_item = Inventory.objects.get(id=inventory_item.id)
+
+        user_center = self.request.user.userprofile.distribution_center
+
+        if center != user_center:
+            form.add_error('center', ValidationError("You are not authorized to perform this action in this distribution center."))
+            return self.form_invalid(form)
+        
             
         if inventory_item.quantity >= quantity:
                 inventory_item.quantity -= quantity
@@ -158,7 +172,7 @@ def get_inventory_items(request):
     return JsonResponse({'items': []})
 
 
-
+@login_required
 def supply_levels(request, abbreviation):
     # Fetch the center based on abbreviation
     center = get_object_or_404(Center, storis_Abbreviation=abbreviation)
@@ -263,7 +277,7 @@ def supply_levels(request, abbreviation):
 
     return render(request, 'inventory_comparison.html', context)
 
-
+@login_required
 def download_csv_report(request):
     # Query to get the total quantity, total cost by product name, person, and date
     checked_out_with_cost = (
@@ -313,6 +327,8 @@ def random_color():
     """Generate a random color in hexadecimal format."""
     return "#{:06x}".format(random.randint(0, 0xFFFFFF))
 
+
+@login_required
 def checkout_chart_view(request):
     # Get selected name and date range from query parameters
     selected_name = request.GET.get('name', '')

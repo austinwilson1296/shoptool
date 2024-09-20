@@ -1,7 +1,7 @@
 # forms.py
 from django import forms
 from django.db import transaction
-from .models import Checkout, Inventory, CheckedOutBy,Center
+from .models import Checkout, Inventory, CheckedOutBy,Center,UserProfile
 
 
 class CheckoutForm(forms.ModelForm):
