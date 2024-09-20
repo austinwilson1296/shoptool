@@ -15,7 +15,7 @@
         <form method="post">
             {% csrf_token %}
             {{ form|crispy }}
-            <button type="submit" class="btn btn-primary">Checkout</button>
+            <button type="submit" onclick="return confirm('Select OK to confirm.\nSelect Cancel to review.')" class="btn btn-primary">Checkout</button>
         </form>
         </br>
     </div>

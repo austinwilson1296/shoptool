@@ -5,6 +5,7 @@ from datetime import datetime
 import plotly.graph_objects as go
 import plotly.express as px
 from io import StringIO
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render,redirect, get_object_or_404
 from django.http import HttpResponse,JsonResponse
 from django.views.generic import ListView, DetailView
@@ -51,7 +52,7 @@ class HomePageView(LoginRequiredMixin, ListView):
 
         return center_quantities
 
-class ProductDetailView(DetailView):
+class ProductDetailView(LoginRequiredMixin,DetailView):
     model = Product
     template_name = "product_lookup.html"
 
@@ -66,7 +67,7 @@ class ProductDetailView(DetailView):
         return context
 
 
-class ProductCreateView(CreateView):
+class ProductCreateView(LoginRequiredMixin,CreateView):
     model = Inventory
     template_name = "product_create.html"
     form_class = ProductForm
@@ -102,7 +103,7 @@ class ProductCreateView(CreateView):
         return super().form_invalid(form)
 
 
-class CheckoutCreateView(CreateView):
+class CheckoutCreateView(LoginRequiredMixin,CreateView):
     model = Checkout
     form_class = CheckoutForm
     template_name = "checkout_create.html"
@@ -138,7 +139,9 @@ class CheckoutCreateView(CreateView):
         if 'form' not in context:
             context['form'] = self.get_form()
         return context
+    
 
+@login_required
 def get_inventory_items(request):
     center_id = request.GET.get('center')
     if center_id:
