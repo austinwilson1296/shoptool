@@ -5,3 +5,5 @@ mysite.log
 Procfile
 VENDOR_IMPORT.xlsx
 .env
+.venv/
+/.venv
