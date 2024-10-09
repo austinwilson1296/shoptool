@@ -19,6 +19,7 @@ class CheckoutForm(forms.ModelForm):
         empty_label=None,
         widget=forms.Select(attrs={'class': 'select2'})  # Add 'select2' class
     )
+    
 
 
     class Meta:

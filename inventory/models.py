@@ -71,11 +71,15 @@ class Checkout(models.Model):
     checked_out_by = models.ForeignKey(CheckedOutBy, on_delete=models.CASCADE)
     checkout_date = models.DateTimeField(default=timezone.now)
     quantity = models.PositiveIntegerField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE,null=True)
 
     def __str__(self):
         return (f'{self.checked_out_by}'
                 f'{self.checkout_date}'
-                f'{self.inventory_item}')
+                f'{self.inventory_item}'
+                f'{self.user}')
     @property
     def total_cost(self):
         return self.quantity * self.inventory_item.product.cost
+    
+

@@ -118,12 +118,15 @@ class CheckoutCreateView(LoginRequiredMixin,CreateView):
 
     def form_valid(self, form):
         # First, call the parent method to handle form saving
+        form.instance.user = self.request.user
         response = super().form_valid(form)
+
             
         # Get the cleaned data from the form
         center = form.cleaned_data['center']
         inventory_item = form.cleaned_data['inventory_item']
         quantity = form.cleaned_data['quantity']
+        
             
         # Update the inventory item quantity
         inventory_item = Inventory.objects.get(id=inventory_item.id)
