@@ -33,7 +33,7 @@ load_dotenv()
 
 DEBUG = env.bool('DJANGO', default=False)
 
-ALLOWED_HOSTS = ['localhost','127.0.0.1','.fly.dev']
+ALLOWED_HOSTS = ['localhost','127.0.0.1','.fly.dev','www.brrshoptool.com','brrshoptool.com']
 
 
 # Application definition
@@ -53,7 +53,6 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap5",
     "users",
-    "supply",
 ]
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 
@@ -146,7 +145,7 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage" 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CSRF_TRUSTED_ORIGINS = ["https://*.fly.dev"]
+CSRF_TRUSTED_ORIGINS = ["https://*.fly.dev",'https://brrshoptool.com','https://www.brrshoptool.com',]
 
 LOGIN_URL = 'users/login_user'
 

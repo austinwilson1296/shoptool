@@ -3,24 +3,22 @@
 {% block nav %}{% endblock %}
 {% block title %}Login{% endblock %}
 {% block content %}
-{%load crispy_forms_tags %}
+{% load crispy_forms_tags %}
 <body>
 <div class="container-lg" style="padding-top:200px">
     <h3 style="text-align:center">LOGIN</h3>
-    </br>
+    <br>
     <div class="d-flex justify-content-lg-center">
-        <span class = "border border-5 border-dark bg-light" style="padding:30px">
-        <form method="post">
-            {% csrf_token %}
-            <form>
+        <span class="border border-5 border-dark bg-light" style="padding:30px">
+            <form method="post">
+                {% csrf_token %}
                 <div class="mb-3">
-                    <label for="exampleInputEmail1" class="form-label">Username:</label>
-                    <input type="text" class="form-control" name="username" aria-describedby="emailHelp">
-
+                    <label for="username" class="form-label">Username:</label>
+                    <input type="text" class="form-control" name="username" id="username" aria-describedby="emailHelp" required>
                 </div>
                 <div class="mb-3">
-                    <label for="exampleInputPassword1" class="form-label">Password:</label>
-                    <input type="password" class="form-control" name="password">
+                    <label for="password" class="form-label">Password:</label>
+                    <input type="password" class="form-control" name="password" id="password" required>
                 </div>
                 <button type="submit" class="btn btn-primary" style="padding:5px">Login</button>
             </form>
