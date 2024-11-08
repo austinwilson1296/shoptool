@@ -68,11 +68,20 @@ class ProductDetailView(LoginRequiredMixin,DetailView):
         return context
 
 
-class ProductCreateView(LoginRequiredMixin,CreateView):
+class ProductCreateView(LoginRequiredMixin, CreateView):
     model = Inventory
     template_name = "product_create.html"
     form_class = ProductForm
     success_url = reverse_lazy('home')
+
+    def get_initial(self):
+        """
+        Initialize the form with the distribution center from the user's profile.
+        """
+        initial = super().get_initial()
+        user_center = self.request.user.userprofile.distribution_center
+        initial['distribution_center'] = user_center  # Provide the user's center as initial data
+        return initial
 
     def form_valid(self, form):
         # Extract form data
@@ -84,29 +93,32 @@ class ProductCreateView(LoginRequiredMixin,CreateView):
 
         user_center = self.request.user.userprofile.distribution_center
 
+        # Check if the user is authorized to add to this distribution center
         if distribution_center != user_center:
-            form.add_error('distribution_center', ValidationError("You are not authorized to perform this action in this distribution center."))
+            form.add_error('distribution_center', ValidationError(
+                "You are not authorized to perform this action in this distribution center."
+            ))
             return self.form_invalid(form)
 
-        # Find existing inventory record
+        # Check if an existing inventory record exists
         existing_inventory = Inventory.objects.filter(
             distribution_center=distribution_center,
             product=product,
             stock_location=stock_location,
             stock_loc_level=stock_loc_level
-        ).first()  # Retrieve the first matching record or None
+        ).first()
 
         if existing_inventory:
-            # Update the existing record's quantity
+            # Update the quantity of the existing inventory
             existing_inventory.quantity += quantity
             existing_inventory.save()
             return redirect(self.success_url)  # Redirect to success URL after updating
         else:
-            # Create a new record if none exists
+            # Proceed with creating a new record
             return super().form_valid(form)  # Call the parent class's form_valid method
 
     def form_invalid(self, form):
-        # Handle invalid form submission if needed
+        # Optionally handle invalid form submission
         return super().form_invalid(form)
 
 

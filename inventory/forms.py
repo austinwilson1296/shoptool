@@ -54,9 +54,9 @@ class CheckoutForm(forms.ModelForm):
 
 
 class ProductForm(forms.ModelForm):
-    CABINET_CHOICES = [
+    # Define the choices for stock_location
+    CABINET_CHOICES_710 = [
         ('XCAB1', 'XCAB 1 – Sprays'),
-        ('XCAB1', 'XCAB 1 (Four Oaks) – Sprays'),
         ('XCAB2', 'XCAB 2 – Sprays'),
         ('XCAB3', 'XCAB 3 – Sprays'),
         ('XCAB4', 'XCAB 4 – Sprays'),
@@ -69,6 +69,33 @@ class ProductForm(forms.ModelForm):
         ('Fastenal', 'Fastenal Purchases'),
     ]
 
+    CABINET_CHOICES_730 = [
+        ('XCAB1(FO)', 'XCAB 1 – Sprays(FO)'),
+        ('XCAB2(FO)', 'XCAB 2 – Sprays(FO)'),
+        ('XCAB3(FO)', 'XCAB 3 – Sprays(FO)'),
+        ('XCAB4(FO)', 'XCAB 4 – Sprays(FO)'),
+        ('XCAB5(FO)', 'XCAB 5 – Sprays(FO)'),
+        ('XCAB6(FO)', 'XCAB 6 – Sprays(FO)'),
+        ('XCAB7(FO)', 'XCAB 7 – Sprays(FO)'),
+        ('XCAB8(FO)', 'XCAB 8 – Sprays(FO)'),
+        ('XCAB9(FO)', 'XCAB 9 – Tools/bits(FO)'),
+        ('XCAB10(FO)', 'XCAB 10 – Bondo/Cleaning sprays(FO)'),
+        ('XCAB11(FO)', 'XCAB 11 – Sandpaper(FO)'),
+        ('XCAB12(FO)', 'XCAB 12 – Gloves/Masking tape(FO)'),
+        ('QIS(FO)', 'QIS – Total Packaging/Atlantic Purchases(FO)'),
+        ('Fastenal(FO)', 'Fastenal Purchases(FO)'),
+    ]
+
+    CABINET_CHOICES_750 = [
+        ('XCAB1(SR)', 'XCAB 1 – Sprays(SR)'),
+        ('XCAB2(SR)', 'XCAB 2 – Sprays(SR)'),
+        ('XCAB3(SR)', 'XCAB 3 – Sprays(SR)'),
+        ('XCAB4(SR)', 'XCAB 4 – Sprays(SR)'),
+        ('QIS(SR)', 'QIS – Total Packaging/Atlantic Purchases(SR)'),
+        ('Fastenal(SR)', 'Fastenal Purchases(SR)'),
+        # ... other choices for 750
+    ]
+
     LEVEL_CHOICES = [
         ('LEVEL1', 'Level 1'),
         ('LEVEL2', 'Level 2'),
@@ -78,7 +105,7 @@ class ProductForm(forms.ModelForm):
         ('LEVEL6', 'Level 6'),
     ]
 
-    stock_location = forms.ChoiceField(choices=CABINET_CHOICES)
+    stock_location = forms.ChoiceField(choices=[])
     stock_loc_level = forms.ChoiceField(choices=LEVEL_CHOICES)
 
     class Meta:
@@ -87,10 +114,23 @@ class ProductForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Apply the select2 class to the product field
-        self.fields['product'].widget.attrs.update({'class': 'select2'})
 
-        # You can also apply select2 to other fields if needed
+        # Get the distribution center from initial data or context
+        distribution_center = str(self.initial.get('distribution_center', None))
+        print(distribution_center)
+
+        # Check if distribution_center is provided and assign appropriate choices
+        if distribution_center == '710':
+            self.fields['stock_location'].choices = self.CABINET_CHOICES_710
+        elif distribution_center == '730':
+            self.fields['stock_location'].choices = self.CABINET_CHOICES_730
+        elif distribution_center == '750':
+            self.fields['stock_location'].choices = self.CABINET_CHOICES_750
+        else:
+            self.fields['stock_location'].choices = []
+
+        # Apply select2 class to all fields
+        self.fields['product'].widget.attrs.update({'class': 'select2'})
         self.fields['stock_location'].widget.attrs.update({'class': 'select2'})
         self.fields['stock_loc_level'].widget.attrs.update({'class': 'select2'})
 
