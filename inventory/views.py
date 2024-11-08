@@ -22,7 +22,6 @@ from .models import Inventory, Product, Checkout, CheckedOutBy, Center,Vendor,Us
 
 class HomePageView(LoginRequiredMixin, ListView):
     model = Inventory
-    paginate_by = 20
     template_name = 'home.html'
 
     def get_context_data(self, **kwargs):
