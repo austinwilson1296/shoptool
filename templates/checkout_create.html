@@ -61,5 +61,22 @@
           });
       });
   });
+  $(document).ready(function() {
+    $('#id_center').change(function() {
+        var centerId = $(this).val();
+        $.ajax({
+            url: "{% url 'ajax_load_checked_out_by' %}",
+            data: {
+                'center_id': centerId
+            },
+            success: function(data) {
+                $("#id_checked_out_by").html('');
+                $.each(data, function(index, item) {
+                    $("#id_checked_out_by").append(new Option(item.name, item.id));
+                });
+            }
+        });
+    });
+});
 </script>
 {% endblock %}

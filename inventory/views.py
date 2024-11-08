@@ -157,6 +157,13 @@ class CheckoutCreateView(LoginRequiredMixin,CreateView):
             context['form'] = self.get_form()
         return context
     
+    
+def load_checked_out_by(request):
+    center_id = request.GET.get('center_id')
+    checked_out_by = CheckedOutBy.objects.filter(distribution_center_id=center_id).order_by('name')
+    data = [{'id': obj.id, 'name': obj.name} for obj in checked_out_by]
+    return JsonResponse(data, safe=False)
+
 
 @login_required
 def get_inventory_items(request):

@@ -6,4 +6,88 @@ Procfile
 VENDOR_IMPORT.xlsx
 .env
 .venv/
-/.venv
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.pyo
+*.pyd
+
+# Django
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+db.sqlite3
+
+# Environments
+.env
+.vscode/
+.venv/
+venv/
+ENV/
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Django Migrations
+*/migrations/
+migrations/
+
+# Byte-compiled / optimized / DLL files
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+*.egg-info/
+.eggs/
+*.egg
+dist/
+build/
+wheels/
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Coverage reports
+.coverage
+.hypothesis/
+htmlcov/
+
+# MyPy
+.mypy_cache/
+
+# Pytest
+.pytest_cache/
+
+# Other
+*.p12
+*.pem
+*.cer
+
+# Static and media files
+/staticfiles/
+/media/
+
+# Local settings
+settings_local.py
