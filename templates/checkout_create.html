@@ -26,41 +26,45 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
 
 <script>
-  $(document).ready(function() {
-    $('#id_checked_out_by').select2();
-    $('#id_inventory_item').select2();
-
-      $('#id_center').on('change', function() {
-          var centerId = $(this).val();
-          var inventoryItemField = $('#id_inventory_item');
-
-          $.ajax({
-              url: "{% url 'get_inventory_items' %}",
-              data: {
-                  'center': centerId
-              },
-              success: function(data) {
-                  console.log('AJAX response:', data);  // Debugging statement
-                  inventoryItemField.empty();
-                  
-                  $.each(data.items, function(index, item) {
-                      console.log('Item:', item);  // Log individual item
-                      var displayText = (item.product__name || 'Unknown Product') + 
-                                         ' | Location: ' + (item.stock_location || 'Unknown Location') + 
-                                         ' | Level: ' + (item.stock_loc_level || 'Unknown Level') + 
-                                         ' | Qty: ' + (item.quantity || '0');
-                      
-                      inventoryItemField.append('<option value="' + item.id + '">' + displayText + '</option>');
-                  });
-                  
-                  inventoryItemField.trigger('change');  // Refresh Select2 dropdown
-              },
-              error: function(xhr, status, error) {
-                  console.error('AJAX error:', status, error);
-              }
-          });
-      });
-  });
+    $(document).ready(function() {
+        $('#id_checked_out_by').select2();
+        $('#id_inventory_item').select2();
+    
+        $('#id_center').on('change', function() {
+            var centerId = $(this).val();
+            var inventoryItemField = $('#id_inventory_item');
+    
+            $.ajax({
+                url: "{% url 'get_inventory_items' %}",
+                data: {
+                    'center': centerId
+                },
+                success: function(data) {
+                    console.log('AJAX response:', data);  // Debugging statement
+                    inventoryItemField.empty();
+                    
+                    $.each(data.items, function(index, item) {
+                        if (item.quantity === 0) {
+                            return;  // Skip items with quantity 0
+                        }
+    
+                        console.log('Item:', item);  // Log individual item
+                        var displayText = (item.product__name || 'Unknown Product') + 
+                                          ' | Location: ' + (item.stock_location || 'Unknown Location') + 
+                                          ' | Level: ' + (item.stock_loc_level || 'Unknown Level') + 
+                                          ' | Qty: ' + (item.quantity || '0');
+                        
+                        inventoryItemField.append('<option value="' + item.id + '">' + displayText + '</option>');
+                    });
+                    
+                    inventoryItemField.trigger('change');  // Refresh Select2 dropdown
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX error:', status, error);
+                }
+            });
+        });
+    });
   $(document).ready(function() {
     $('#id_center').change(function() {
         var centerId = $(this).val();

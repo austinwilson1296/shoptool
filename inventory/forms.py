@@ -1,6 +1,5 @@
 # forms.py
 from django import forms
-from django.db import transaction
 from .models import Checkout, Inventory, CheckedOutBy,Center,UserProfile
 
 
@@ -34,7 +33,7 @@ class CheckoutForm(forms.ModelForm):
                 # Set queryset for checked_out_by based on selected center
                 self.fields['checked_out_by'].queryset = CheckedOutBy.objects.filter(distribution_center_id=center_id)
                 # Set queryset for inventory_item based on selected center
-                self.fields['inventory_item'].queryset = Inventory.objects.filter(distribution_center_id=center_id) 
+                self.fields['inventory_item'].queryset = Inventory.objects.filter(distribution_center_id=center_id,).exclude(quantity=0) 
             except (ValueError, TypeError):
                 # Set empty querysets if center_id is invalid
                 self.fields['checked_out_by'].queryset = CheckedOutBy.objects.none()
@@ -45,7 +44,7 @@ class CheckoutForm(forms.ModelForm):
             center_id = self.instance.center.id
             # Set checked_out_by and inventory_item querysets based on instance's center
             self.fields['checked_out_by'].queryset = CheckedOutBy.objects.filter(distribution_center_id=center_id)
-            self.fields['inventory_item'].queryset = Inventory.objects.filter(distribution_center_id=center_id)
+            self.fields['inventory_item'].queryset = Inventory.objects.filter(distribution_center_id=center_id).exclude(quantity=0) 
         else:
             # Default to empty querysets when no center is selected
             self.fields['checked_out_by'].queryset = CheckedOutBy.objects.none()
@@ -93,7 +92,6 @@ class ProductForm(forms.ModelForm):
         ('XCAB4(SR)', 'XCAB 4 – Sprays(SR)'),
         ('QIS(SR)', 'QIS – Total Packaging/Atlantic Purchases(SR)'),
         ('Fastenal(SR)', 'Fastenal Purchases(SR)'),
-        # ... other choices for 750
     ]
 
     LEVEL_CHOICES = [
