@@ -42,6 +42,7 @@ class CheckoutForm(forms.ModelForm):
 class ProductForm(forms.ModelForm):
     CABINET_CHOICES = [
         ('XCAB1', 'XCAB 1 – Sprays'),
+        ('XCAB1', 'XCAB 1 (Four Oaks) – Sprays'),
         ('XCAB2', 'XCAB 2 – Sprays'),
         ('XCAB3', 'XCAB 3 – Sprays'),
         ('XCAB4', 'XCAB 4 – Sprays'),
