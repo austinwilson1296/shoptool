@@ -33,7 +33,7 @@
                     <tbody>
                         {% for inventory_item in object_list %}
                             {% if inventory_item.quantity > 0 %}
-                                <tr>
+                                <tr> 
                                     <td>{{ inventory_item.distribution_center }}</td>
                                     <td><a href="{{ inventory_item.product.get_absolute_url }}">{{ inventory_item.product }}</a></td>
                                     <td>{{ inventory_item.quantity }}</td>
@@ -44,6 +44,23 @@
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+            <div class="pagination">
+                <span class="step-links">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1">&laquo; first</a>
+                        <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                    {% endif %}
+            
+                    <span class="current">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                    </span>
+            
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}">next</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                    {% endif %}
+                </span>
             </div>
         </div>
 
@@ -61,7 +78,9 @@
                     </thead>
                     <tbody>
                     {% for center, data in center_quantities.items %}
-                    <tr>
+                    
+                    <tr> 
+                        
                         <td>{{ center }}</td>
                         <td>{{ data.total_quantity }}</td> <!-- Updated to reference total_quantity -->
                         <td>${{ data.total_cost }}</td> <!-- Updated to reference total_cost -->

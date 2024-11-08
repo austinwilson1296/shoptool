@@ -34,7 +34,7 @@ class CheckoutForm(forms.ModelForm):
                 # Set queryset for checked_out_by based on selected center
                 self.fields['checked_out_by'].queryset = CheckedOutBy.objects.filter(distribution_center_id=center_id)
                 # Set queryset for inventory_item based on selected center
-                self.fields['inventory_item'].queryset = Inventory.objects.filter(distribution_center_id=center_id)
+                self.fields['inventory_item'].queryset = Inventory.objects.filter(distribution_center_id=center_id) 
             except (ValueError, TypeError):
                 # Set empty querysets if center_id is invalid
                 self.fields['checked_out_by'].queryset = CheckedOutBy.objects.none()
