@@ -1,10 +1,11 @@
  
 ## Project Description:
-The Supply Dashboard is a web application that allows our distribution centers to track shop supplies and usage across all distribution centers. This will allow us to control spending/usage and order supplies more efficiently. This is a custom solution built using the Django web-framework and is hosted on Fly.io with a provisioned postgres-db. 
+The Supply Dashboard is a web application that allows our distribution centers to track shop supplies and usage across all distribution centers. This will allow us to control spending/usage and order supplies more efficiently. 
 
-estimated maintenance cost for this project will be $600 annually. 
-
-All process documentation will be hosted on WISE.
+### Technologies Used:
+* Django
+* Fly.io
+* Postgres
 
 
 ### Core features include:
@@ -33,4 +34,3 @@ All process documentation will be hosted on WISE.
 * Automated ordering for applicable vendors 
 * Supply Transfers between distribution centers 
 * Barcode scanning 
-*
