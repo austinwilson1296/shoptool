@@ -5,6 +5,7 @@ from datetime import datetime
 import plotly.graph_objects as go
 import plotly.express as px
 from io import StringIO
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render,redirect, get_object_or_404
 from django.http import HttpResponse,JsonResponse,HttpResponseForbidden
@@ -16,7 +17,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Sum, F, FloatField, ExpressionWrapper
 from django.template import Context,Engine
 from django.template.loader import render_to_string
-from .forms import CheckoutForm, ProductForm, FilteredCheckoutForm
+from .forms import CheckoutForm, ProductForm, FilteredCheckoutForm,TransferForm
 from .models import Inventory, Product, Checkout, CheckedOutBy, Center,Vendor,UserProfile
 
 
@@ -432,7 +433,73 @@ def checkout_chart_view(request):
 1. Select item to transfer along with DC 
 2.Enter quantity to transfer 
 3.Location to transfer to.
+
+REQUIREMENTS:
+- Form that displays all inventory for a given location.
+- Quantity to subtract from/add to selected location (along with product_name)
+- List of locations in the available DC 
 '''
+@login_required
+def transfer_inventory_view(request):
+    # Get the user's distribution center abbreviation (string) for dropdown population
+    user_center_str = str(request.user.userprofile.distribution_center.storis_Abbreviation)
+
+    # Get the actual Center object for saving in the database
+    user_center = request.user.userprofile.distribution_center  # This should be a Center instance
+
+    if not user_center:
+        # Handle the case where the user does not have a valid distribution center assigned
+        messages.error(request, "No distribution center found for your profile.")
+        return redirect('home')  # Redirect to an error page or some fallback page
+
+    if request.method == "POST":
+        form = TransferForm(request.POST, dc=user_center_str)  # Pass the abbreviation string to the form
+        if form.is_valid():
+            item = form.cleaned_data['inventory_item']
+            quantity_transfer = form.cleaned_data['quantity']
+            stock_location = form.cleaned_data['stock_location']
+            stock_location_level = form.cleaned_data['stock_loc_level']
+
+            # Check if transfer quantity is not greater than available quantity
+            if quantity_transfer <= item.quantity:
+                item.quantity -= quantity_transfer
+                item.save()
+
+                # Check if an Inventory object with the same product, location, level, and DC already exists
+                existing_inventory = Inventory.objects.filter(
+                    product=item.product,
+                    distribution_center=user_center,
+                    stock_location=stock_location,
+                    stock_loc_level=stock_location_level
+                ).first()
+
+                if existing_inventory:
+                    # If an existing inventory object is found, increment the quantity
+                    existing_inventory.quantity += quantity_transfer
+                    existing_inventory.save()
+                    messages.success(request, 'Inventory quantity updated successfully.')
+                else:
+                    # If no matching inventory object is found, create a new one
+                    new_inv_object = Inventory(
+                        distribution_center=user_center,  # Use the actual Center instance
+                        product=item.product,
+                        quantity=quantity_transfer,
+                        stock_location=stock_location,
+                        stock_loc_level=stock_location_level
+                    )
+                    new_inv_object.save()
+                    messages.success(request, 'Inventory transferred successfully.')
+
+                return redirect('transfer_inventory')  # Replace with your success URL name
+            else:
+                form.add_error('quantity', 'Insufficient inventory for the selected item.')
+                messages.error(request, 'Quantity exceeds available inventory.')
+        else:
+            messages.error(request, 'There was an error with the form.')
+    else:
+        form = TransferForm(dc=user_center_str)  # Pass the abbreviation string to the form
+
+    return render(request, 'b2b.html', {'form': form})
 #TO-DO - Add views for creating/viewing/receiving/completing transfers between locations.
 
 #TO-DO - Inventory views for each storage location.
