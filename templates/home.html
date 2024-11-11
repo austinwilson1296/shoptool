@@ -32,16 +32,24 @@
                     </thead>
                     <tbody>
                         {% for inventory_item in object_list %}
-                            {% if inventory_item.quantity > 0 %}
-                                <tr> 
-                                    <td>{{ inventory_item.distribution_center }}</td>
-                                    <td><a href="{{ inventory_item.product.get_absolute_url }}">{{ inventory_item.product }}</a></td>
-                                    <td>{{ inventory_item.quantity }}</td>
-                                    <td>{{ inventory_item.stock_location }}</td>
-                                    <td>{{ inventory_item.stock_loc_level }}</td>
-                                </tr>
-                            {% endif %}
-                        {% endfor %}
+                        {% if inventory_item.quantity > 0 %}
+                            <tr 
+                                {% if inventory_item.distribution_center.id == '710' %}
+                                    style="background-color: orange;"
+                                {% elif inventory_item.distribution_center.id == '730' %}
+                                    style="background-color: blue; color: white;"  
+                                {% elif inventory_item.distribution_center.id == '750' %}
+                                    style="background-color: purple; color: white;" 
+                                {% endif %}
+                            >
+                                <td>{{ inventory_item.distribution_center }}</td>
+                                <td><a href="{{ inventory_item.product.get_absolute_url }}">{{ inventory_item.product }}</a></td>
+                                <td>{{ inventory_item.quantity }}</td>
+                                <td>{{ inventory_item.stock_location }}</td>
+                                <td>{{ inventory_item.stock_loc_level }}</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
                     </tbody>
                 </table>
             </div>

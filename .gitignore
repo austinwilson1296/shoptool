@@ -91,3 +91,8 @@ htmlcov/
 
 # Local settings
 settings_local.py
+
+
+.log
+Procfile
+.xlsx

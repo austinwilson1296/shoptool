@@ -427,4 +427,18 @@ def checkout_chart_view(request):
         'end_date': end_date_str
     })
 
+#TO-DO - Add views for transferring inventory between storage locations.(BIN2BIN)
+'''
+1. Select item to transfer along with DC 
+2.Enter quantity to transfer 
+3.Location to transfer to.
+'''
+#TO-DO - Add views for creating/viewing/receiving/completing transfers between locations.
 
+#TO-DO - Inventory views for each storage location.
+
+#TO-DO - Add view inside of the checkout and create views to show on hand items and where they currently are.
+
+#TO-DO - Supply request forms. User auth not required. 
+
+#TO-DO - Additional Analytics? Check out items and cost per team member | Top 10 most checked out items w cost. 
