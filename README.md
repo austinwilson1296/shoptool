@@ -12,6 +12,7 @@ The Supply Dashboard is a web application that allows our distribution centers t
 * User Authentication System for each Distribution Center Location.
 * Center based restrictions for adding and removing items. 
 * Receiving supplies into pre-defined storage locations 
+* Moving stock between locations. 
 * Checking out items coupled with technician name for reporting on usage. 
 * Home page dashboard to display all inventory across centers and a high level overview of cost and item count. 
 * Links to all shop documentation via WISE and Operational Excellence sharepoint pages.
@@ -26,7 +27,9 @@ The Supply Dashboard is a web application that allows our distribution centers t
 	* Interactive chart with drill down capability.
 
 
+
 ### Future Updates:
+* Transaction timestamps for receiving/checkouts/transfers
 * Adding user approval for supplies requests
 * Additional analytics
 	* Usage report by product 
