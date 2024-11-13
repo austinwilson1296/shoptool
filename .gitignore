@@ -17,6 +17,7 @@ dist/
 build/
 *.pyo
 *.pyd
+__pycache__/
 
 # Django
 *.log
