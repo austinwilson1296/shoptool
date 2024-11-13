@@ -498,18 +498,17 @@ REQUIREMENTS:
 @login_required
 def transfer_inventory_view(request):
     # Get the user's distribution center abbreviation (string) for dropdown population
-    user_center_str = str(request.user.userprofile.distribution_center.storis_Abbreviation)
-
-    # Get the actual Center object for saving in the database
     user_center = request.user.userprofile.distribution_center  # This should be a Center instance
+    user_center_str = str(user_center.storis_Abbreviation)
 
+    # If the user doesn't have a valid distribution center assigned
     if not user_center:
-        # Handle the case where the user does not have a valid distribution center assigned
         messages.error(request, "No distribution center found for your profile.")
         return redirect('error_page')  # Redirect to an error page or some fallback page
 
     if request.method == "POST":
         form = TransferForm(request.POST, dc=user_center_str)  # Pass the abbreviation string to the form
+
         if form.is_valid():
             item = form.cleaned_data['inventory_item']
             quantity_transfer = form.cleaned_data['quantity']
@@ -521,6 +520,15 @@ def transfer_inventory_view(request):
                 # Decrease the quantity in the current inventory item
                 item.quantity -= quantity_transfer
                 item.save()
+
+                # Record the transaction (transfer)
+                record_transaction(
+                    action='transfer',
+                    inventory_item=item,
+                    quantity=quantity_transfer,
+                    user=request.user,
+                    notes=f"Transferred {quantity_transfer} units of {item} to {stock_location} {stock_location_level}."
+                )
 
                 # Check if an Inventory object with the same product, location, level, and DC already exists
                 existing_inventory = Inventory.objects.filter(
