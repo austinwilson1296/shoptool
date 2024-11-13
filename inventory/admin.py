@@ -24,6 +24,7 @@ admin.site.register(Center)
 admin.site.register(Inventory, ImportExportModelAdmin)
 admin.site.register(Checkout)
 admin.site.register(CheckedOutBy)
+admin.site.register(TransactionHistory,ImportExportModelAdmin)
 
 
 

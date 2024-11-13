@@ -27,6 +27,8 @@ class CheckoutForm(forms.ModelForm):
         fields = ['center', 'inventory_item', 'checked_out_by', 'quantity']
 
     def __init__(self, *args, **kwargs):
+        # Capture the initial center passed from the view
+        initial_center = kwargs.pop('initial_center', None)
         super().__init__(*args, **kwargs)
 
         # Handle cases when form data is submitted with a selected center
@@ -36,18 +38,25 @@ class CheckoutForm(forms.ModelForm):
                 # Set queryset for checked_out_by based on selected center
                 self.fields['checked_out_by'].queryset = CheckedOutBy.objects.filter(distribution_center_id=center_id)
                 # Set queryset for inventory_item based on selected center
-                self.fields['inventory_item'].queryset = Inventory.objects.filter(distribution_center_id=center_id,).exclude(quantity=0) 
+                self.fields['inventory_item'].queryset = Inventory.objects.filter(distribution_center_id=center_id).exclude(quantity=0)
             except (ValueError, TypeError):
                 # Set empty querysets if center_id is invalid
                 self.fields['checked_out_by'].queryset = CheckedOutBy.objects.none()
                 self.fields['inventory_item'].queryset = Inventory.objects.none()
+
+        # If an initial center is provided, use it
+        elif initial_center:
+            self.fields['center'].initial = initial_center
+            # Set checked_out_by and inventory_item querysets based on initial center
+            self.fields['checked_out_by'].queryset = CheckedOutBy.objects.filter(distribution_center_id=initial_center.id)
+            self.fields['inventory_item'].queryset = Inventory.objects.filter(distribution_center_id=initial_center.id).exclude(quantity=0)
 
         # When editing an existing instance (like a saved Checkout record)
         elif self.instance.pk:
             center_id = self.instance.center.id
             # Set checked_out_by and inventory_item querysets based on instance's center
             self.fields['checked_out_by'].queryset = CheckedOutBy.objects.filter(distribution_center_id=center_id)
-            self.fields['inventory_item'].queryset = Inventory.objects.filter(distribution_center_id=center_id).exclude(quantity=0) 
+            self.fields['inventory_item'].queryset = Inventory.objects.filter(distribution_center_id=center_id).exclude(quantity=0)
         else:
             # Default to empty querysets when no center is selected
             self.fields['checked_out_by'].queryset = CheckedOutBy.objects.none()
@@ -106,6 +115,11 @@ class TransferForm(forms.Form):
     def __init__(self, *args, **kwargs):
         dc = kwargs.pop('dc', None)  # Expecting 'dc' to be passed in when initializing the form
         super().__init__(*args, **kwargs)
+        
+        # Filter inventory items based on the distribution center (dc)
+        if dc:
+            # Filter Inventory based on the distribution_center foreign key
+            self.fields['inventory_item'].queryset = Inventory.objects.filter(distribution_center__storis_Abbreviation=dc)
         
         # Set choices for stock_location based on the distribution center
         if dc == '710':

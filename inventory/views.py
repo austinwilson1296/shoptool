@@ -19,6 +19,7 @@ from django.template import Context,Engine
 from django.template.loader import render_to_string
 from .forms import CheckoutForm, ProductForm, FilteredCheckoutForm,TransferForm
 from .models import Inventory, Product, Checkout, CheckedOutBy, Center,Vendor,UserProfile
+from .utils import record_transaction
 
 
 class HomePageView(LoginRequiredMixin, ListView):
@@ -91,8 +92,8 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
         quantity = form.cleaned_data['quantity']
         stock_location = form.cleaned_data['stock_location']
         stock_loc_level = form.cleaned_data['stock_loc_level']
-
-        user_center = self.request.user.userprofile.distribution_center
+        user = self.request.user
+        user_center = user.userprofile.distribution_center
 
         # Check if the user is authorized to add to this distribution center
         if distribution_center != user_center:
@@ -113,9 +114,28 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
             # Update the quantity of the existing inventory
             existing_inventory.quantity += quantity
             existing_inventory.save()
+
+            # Record the transaction as a receiving action
+            record_transaction(
+                action='receive',
+                inventory_item=existing_inventory,
+                quantity=quantity,
+                user=user,
+                notes=f"Received {quantity} units of {product.name} at {distribution_center.name}."
+            )
             return redirect(self.success_url)  # Redirect to success URL after updating
         else:
-            # Proceed with creating a new record
+            # If no existing inventory record, save the new form to create it
+            self.object = form.save()
+
+            # Record the transaction as a receiving action for the new inventory item
+            record_transaction(
+                action='receive',
+                inventory_item=self.object,
+                quantity=quantity,
+                user=user,
+                notes=f"Created new inventory with {quantity} units of {product.name} at {distribution_center.name}."
+            )
             return super().form_valid(form)  # Call the parent class's form_valid method
 
     def form_invalid(self, form):
@@ -123,52 +143,88 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
         return super().form_invalid(form)
 
 
-class CheckoutCreateView(LoginRequiredMixin,CreateView):
+class CheckoutCreateView(LoginRequiredMixin, CreateView):
     model = Checkout
     form_class = CheckoutForm
     template_name = "checkout_create.html"
-    success_url = reverse_lazy('checkout_create')
+    success_url = reverse_lazy('checkout_create')  # Redirect to the same form after success
 
-    def form_valid(self, form):
-        # First, call the parent method to handle form saving
-        form.instance.user = self.request.user
-        response = super().form_valid(form)
+    def get_initial(self):
+        """
+        Initialize the form with the distribution center abbreviation from the user's profile.
+        """
+        initial = super().get_initial()
 
-            
-        # Get the cleaned data from the form
-        center = form.cleaned_data['center']
-        inventory_item = form.cleaned_data['inventory_item']
-        quantity = form.cleaned_data['quantity']
+        # Ensure the user has a profile with a distribution center
+        if not hasattr(self.request.user, 'userprofile') or not self.request.user.userprofile.distribution_center:
+            raise ValidationError("User profile is missing or distribution center is not set.")
         
-            
-        # Update the inventory item quantity
-        inventory_item = Inventory.objects.get(id=inventory_item.id)
-
-        user_center = self.request.user.userprofile.distribution_center
-
-        if center != user_center:
-            form.add_error('center', ValidationError("You are not authorized to perform this action in this distribution center."))
-            return self.form_invalid(form)
-        
-            
-        if inventory_item.quantity >= quantity:
-                inventory_item.quantity -= quantity
-                inventory_item.save()
-                
-        else:
-                form.add_error('quantity', 'Insufficient inventory for the selected item.')
-                return self.form_invalid(form)
-
-        return response
-
-    def form_invalid(self, form):
-        return self.render_to_response(self.get_context_data(form=form))
+        # Retrieve the user's associated distribution center abbreviation (storis_Abbreviation)
+        user_center = self.request.user.userprofile.distribution_center.storis_Abbreviation
+        initial['center'] = user_center  # Set the center field in the form with the user's center abbreviation
+        return initial
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if 'form' not in context:
-            context['form'] = self.get_form()
+        # Pass the initial center data to the form initialization
+        context['form'] = self.get_form()
         return context
+
+    def form_valid(self, form):
+        # Extract form data
+        center = form.cleaned_data['center']
+        inventory_item = form.cleaned_data['inventory_item']
+        quantity = form.cleaned_data['quantity']
+        checked_out_by = form.cleaned_data['checked_out_by']
+        user = self.request.user
+
+        # Ensure the user has a profile with a distribution center
+        if not hasattr(user, 'userprofile') or not user.userprofile.distribution_center:
+            form.add_error(None, "User profile is missing or distribution center is not set.")
+            return self.form_invalid(form)
+
+        user_center = user.userprofile.distribution_center
+
+        # Check if the user is authorized to perform this action in the given distribution center
+        if center != user_center:
+            form.add_error('center', ValidationError(
+                "You are not authorized to perform this action in this distribution center."
+            ))
+            return self.form_invalid(form)
+
+        # Get the inventory item
+        try:
+            inventory_item = Inventory.objects.get(id=inventory_item.id)
+        except Inventory.DoesNotExist:
+            form.add_error('inventory_item', 'Inventory item not found.')
+            return self.form_invalid(form)
+
+        # Check if the inventory has sufficient quantity
+        if inventory_item.quantity >= quantity:
+            # Deduct the quantity from the inventory
+            inventory_item.quantity -= quantity
+            inventory_item.save()
+
+            # Record the transaction as a checkout action
+            record_transaction(
+                action='checkout',
+                inventory_item=inventory_item,
+                quantity=quantity,
+                user=user,
+                notes=f"Checked out {quantity} units of {inventory_item.product.name} for {checked_out_by} from {center.name}."
+            )
+
+            # Create the Checkout record
+            form.instance.user = user  # Associate the checkout with the current user
+            response = super().form_valid(form)
+            return response
+        else:
+            form.add_error('quantity', 'Insufficient inventory for the selected item.')
+            return self.form_invalid(form)
+
+    def form_invalid(self, form):
+        """ Optionally handle invalid form submission """
+        return super().form_invalid(form)
     
     
 def load_checked_out_by(request):
@@ -450,7 +506,7 @@ def transfer_inventory_view(request):
     if not user_center:
         # Handle the case where the user does not have a valid distribution center assigned
         messages.error(request, "No distribution center found for your profile.")
-        return redirect('home')  # Redirect to an error page or some fallback page
+        return redirect('error_page')  # Redirect to an error page or some fallback page
 
     if request.method == "POST":
         form = TransferForm(request.POST, dc=user_center_str)  # Pass the abbreviation string to the form
@@ -462,6 +518,7 @@ def transfer_inventory_view(request):
 
             # Check if transfer quantity is not greater than available quantity
             if quantity_transfer <= item.quantity:
+                # Decrease the quantity in the current inventory item
                 item.quantity -= quantity_transfer
                 item.save()
 
@@ -490,7 +547,7 @@ def transfer_inventory_view(request):
                     new_inv_object.save()
                     messages.success(request, 'Inventory transferred successfully.')
 
-                return redirect('transfer_inventory')  # Replace with your success URL name
+                return redirect('transfer_inventory')  # Redirect to the transfer inventory page (or success URL)
             else:
                 form.add_error('quantity', 'Insufficient inventory for the selected item.')
                 messages.error(request, 'Quantity exceeds available inventory.')

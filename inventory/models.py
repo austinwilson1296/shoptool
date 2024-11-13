@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.urls import reverse
 from django.contrib.auth.models import User
+import pytz
 
 
 class Product(models.Model):
@@ -82,4 +83,29 @@ class Checkout(models.Model):
     def total_cost(self):
         return self.quantity * self.inventory_item.product.cost
     
+
+class TransactionHistory(models.Model):
+    ACTION_CHOICES = [
+        ('receive', 'Received'),
+        ('transfer', 'Transferred'),
+        ('checkout', 'Checked Out'),
+    ]
+    
+    action = models.CharField(max_length=50, choices=ACTION_CHOICES)
+    inventory_item = models.ForeignKey('Inventory', on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    user_center = models.CharField(max_length=100, null=True, blank=True)  # Store the center name or ID if needed
+    timestamp = models.DateTimeField(default=timezone.now)
+    notes = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.action} - {self.inventory_item} - {self.quantity} - {self.user.username if self.user else 'N/A'} - {self.timestamp}"
+    
+    @property
+    def formatted_timestamp(self):
+        # Convert timestamp to EST and format it
+        est = pytz.timezone('US/Eastern')  # Eastern Standard Time
+        timestamp_est = self.timestamp.astimezone(est)  # Convert to EST
+        return timestamp_est.strftime('%Y-%m-%d %H:%M:%S')  # Format the timestamp
 
