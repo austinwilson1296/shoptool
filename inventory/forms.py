@@ -27,29 +27,32 @@ class CheckoutForm(forms.ModelForm):
         fields = ['center', 'inventory_item', 'checked_out_by', 'quantity']
 
     def __init__(self, *args, **kwargs):
+        dc = kwargs.pop('dc', None)  # Get the passed distribution center abbreviation
         super().__init__(*args, **kwargs)
-
-        # Handle cases when form data is submitted with a selected center
-        if 'center' in self.data:
+        for key,value in self.data.items():
+            print(key,value)
+        # Set initial value for center from the user’s profile
+        if dc:
             try:
-                center_id = int(self.data.get('center'))
-                # Set queryset for checked_out_by based on selected center
-                self.fields['checked_out_by'].queryset = CheckedOutBy.objects.filter(distribution_center_id=center_id)
-                # Set queryset for inventory_item based on selected center
-                self.fields['inventory_item'].queryset = Inventory.objects.filter(distribution_center_id=center_id,).exclude(quantity=0) 
-            except (ValueError, TypeError):
-                # Set empty querysets if center_id is invalid
-                self.fields['checked_out_by'].queryset = CheckedOutBy.objects.none()
-                self.fields['inventory_item'].queryset = Inventory.objects.none()
+                user_center = Center.objects.get(storis_Abbreviation=dc)
+                
+                self.fields['center'].initial = user_center
+            except Center.DoesNotExist:
+                pass  # No center for the user
 
-        # When editing an existing instance (like a saved Checkout record)
+            # If 'center' is passed in the data, update the dependent fields (checked_out_by, inventory_item)
+            if 'center' in self.data:
+                center_id = self.data.get('center')
+                
+                self.fields['checked_out_by'].queryset = CheckedOutBy.objects.filter(distribution_center_id=center_id)
+                self.fields['inventory_item'].queryset = Inventory.objects.filter(distribution_center_id=center_id).exclude(quantity=0)
+
+            # Handle dynamic queryset for editing an existing Checkout instance
         elif self.instance.pk:
             center_id = self.instance.center.id
-            # Set checked_out_by and inventory_item querysets based on instance's center
             self.fields['checked_out_by'].queryset = CheckedOutBy.objects.filter(distribution_center_id=center_id)
-            self.fields['inventory_item'].queryset = Inventory.objects.filter(distribution_center_id=center_id).exclude(quantity=0) 
+            self.fields['inventory_item'].queryset = Inventory.objects.filter(distribution_center_id=center_id).exclude(quantity=0)
         else:
-            # Default to empty querysets when no center is selected
             self.fields['checked_out_by'].queryset = CheckedOutBy.objects.none()
             self.fields['inventory_item'].queryset = Inventory.objects.none()
 

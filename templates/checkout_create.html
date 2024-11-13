@@ -27,28 +27,39 @@
 
 <script>
     $(document).ready(function() {
-        $('#id_checked_out_by').select2();
-        $('#id_inventory_item').select2();
-    
+        // Trigger the AJAX call for inventory items and checked-out-by names when the page loads, if a center is already selected
+        var centerId = $('#id_center').val();  // Get the current value of the center dropdown
+        if (centerId) {
+            updateInventoryItems(centerId);  // Call the function to populate the inventory items
+            updateCheckedOutBy(centerId);  // Call the function to populate the checked-out-by names
+        }
+
+        // Handle the change event for the center dropdown
         $('#id_center').on('change', function() {
             var centerId = $(this).val();
+            updateInventoryItems(centerId);  // Call the function to populate the inventory items
+            updateCheckedOutBy(centerId);  // Call the function to populate the checked-out-by names
+        });
+
+        // Function to update the inventory items dropdown
+        function updateInventoryItems(centerId) {
             var inventoryItemField = $('#id_inventory_item');
-    
+            
             $.ajax({
                 url: "{% url 'get_inventory_items' %}",
                 data: {
-                    'center': centerId
+                    'center': centerId  // Send the center ID to the backend
                 },
                 success: function(data) {
-                    console.log('AJAX response:', data);  // Debugging statement
-                    inventoryItemField.empty();
+                    console.log('AJAX response (inventory items):', data);  // Debugging statement
+                    inventoryItemField.empty();  // Clear current options
                     
+                    // Iterate through the returned items and populate the dropdown
                     $.each(data.items, function(index, item) {
                         if (item.quantity === 0) {
                             return;  // Skip items with quantity 0
                         }
-    
-                        console.log('Item:', item);  // Log individual item
+                        
                         var displayText = (item.product__name || 'Unknown Product') + 
                                           ' | Location: ' + (item.stock_location || 'Unknown Location') + 
                                           ' | Level: ' + (item.stock_loc_level || 'Unknown Level') + 
@@ -60,27 +71,36 @@
                     inventoryItemField.trigger('change');  // Refresh Select2 dropdown
                 },
                 error: function(xhr, status, error) {
-                    console.error('AJAX error:', status, error);
+                    console.error('AJAX error (inventory items):', status, error);
                 }
             });
-        });
+        }
+
+        // Function to update the checked-out-by names dropdown
+        function updateCheckedOutBy(centerId) {
+            var checkedOutByField = $('#id_checked_out_by');
+            
+            $.ajax({
+                url: "{% url 'ajax_load_checked_out_by' %}",
+                data: {
+                    'center_id': centerId  // Send the center ID to the backend
+                },
+                success: function(data) {
+                    console.log('AJAX response (checked-out-by names):', data);  // Debugging statement
+                    checkedOutByField.empty();  // Clear current options
+                    
+                    // Iterate through the returned users and populate the dropdown
+                    $.each(data, function(index, item) {
+                        checkedOutByField.append(new Option(item.name, item.id));
+                    });
+                    
+                    checkedOutByField.trigger('change');  // Refresh Select2 dropdown
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX error (checked-out-by names):', status, error);
+                }
+            });
+        }
     });
-  $(document).ready(function() {
-    $('#id_center').change(function() {
-        var centerId = $(this).val();
-        $.ajax({
-            url: "{% url 'ajax_load_checked_out_by' %}",
-            data: {
-                'center_id': centerId
-            },
-            success: function(data) {
-                $("#id_checked_out_by").html('');
-                $.each(data, function(index, item) {
-                    $("#id_checked_out_by").append(new Option(item.name, item.id));
-                });
-            }
-        });
-    });
-});
 </script>
 {% endblock %}

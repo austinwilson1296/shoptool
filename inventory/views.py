@@ -143,53 +143,55 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
         return super().form_invalid(form)
 
 
-class CheckoutCreateView(LoginRequiredMixin,CreateView):
-    model = Checkout
-    form_class = CheckoutForm
-    template_name = "checkout_create.html"
-    success_url = reverse_lazy('checkout_create')
+@login_required
+def checkout_inventory_view(request):
+    user_center = request.user.userprofile.distribution_center  # Get the user’s distribution center
+    user_center_str = str(user_center.storis_Abbreviation)  # Get the abbreviation for the center
 
-    def form_valid(self, form):
-        # First, call the parent method to handle form saving
-        form.instance.user = self.request.user
-        response = super().form_valid(form)
+    # If the user doesn't have a valid distribution center assigned
+    if not user_center:
+        messages.error(request, "No distribution center found for your profile.")
+        return redirect('error_page')  # Redirect to an error page or some fallback page
 
+    if request.method == "POST":
+        form = CheckoutForm(request.POST, dc=user_center_str)  # Pass the abbreviation to the form
+
+        if form.is_valid():
+            center = form.cleaned_data['center']
+          
+            item = form.cleaned_data['inventory_item']
+            quantity_checkout = form.cleaned_data['quantity']
             
-        # Get the cleaned data from the form
-        center = form.cleaned_data['center']
-        inventory_item = form.cleaned_data['inventory_item']
-        quantity = form.cleaned_data['quantity']
-        
-            
-        # Update the inventory item quantity
-        inventory_item = Inventory.objects.get(id=inventory_item.id)
+            # Validate that the user is allowed to check out from the given center
+            if user_center_str == str(center):
+                # Check if the requested quantity is available in inventory
+                if quantity_checkout <= item.quantity:
+                    item.quantity -= quantity_checkout
+                    item.save()  # Update the inventory item quantity
 
-        user_center = self.request.user.userprofile.distribution_center
+                    # Record the checkout transaction (similar to the transfer)
+                    record_transaction(
+                        action='checkout',
+                        inventory_item=item,
+                        quantity=quantity_checkout,
+                        user=request.user,
+                        notes=f"Checked out {quantity_checkout} units of {item}."
+                    )
 
-        if center != user_center:
-            form.add_error('center', ValidationError("You are not authorized to perform this action in this distribution center."))
-            return self.form_invalid(form)
-        
-            
-        if inventory_item.quantity >= quantity:
-                inventory_item.quantity -= quantity
-                inventory_item.save()
-                messages.success(self.request, 'Inventory checked out successfully.')
-                
+                    messages.success(request, 'Inventory checked out successfully.')
+                    return redirect('checkout_create')  # Redirect to the checkout page or success URL
+                else:
+                    form.add_error('quantity', 'Insufficient inventory for the selected item.')
+                    messages.error(request, 'Quantity exceeds available inventory.')
+            else:
+                messages.error(request, 'You do not have access to this DC.')
         else:
-                form.add_error('quantity', 'Insufficient inventory for the selected item.')
-                return self.form_invalid(form)
+            messages.error(request, 'There was an error with the form.')
 
-        return response
+    else:
+        form = CheckoutForm(dc=user_center_str)  # Initialize the form with the center abbreviation
 
-    def form_invalid(self, form):
-        return self.render_to_response(self.get_context_data(form=form))
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if 'form' not in context:
-            context['form'] = self.get_form()
-        return context
+    return render(request, 'checkout_create.html', {'form': form})
     
     
 def load_checked_out_by(request):
