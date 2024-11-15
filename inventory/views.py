@@ -560,8 +560,9 @@ def inventory_lookup_view(request):
             stock_location = form.cleaned_data['stock_location']
             # Filter Inventory based on selected stock location
             items = Inventory.objects.filter(stock_location=stock_location)
+            sorted_items = items.order_by('product')
 
     return render(request, "inventory_lookup.html", {
         "form": form,
-        "items": items,
+        "items": sorted_items,
     })
