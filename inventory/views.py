@@ -74,7 +74,7 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
     model = Inventory
     template_name = "product_create.html"
     form_class = ProductForm
-    success_url = reverse_lazy('home')
+    success_url = reverse_lazy('product_create')
 
     def get_initial(self):
         """
@@ -123,6 +123,7 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
                 user=user,
                 notes=f"Received {quantity} units of {product.name} at {distribution_center.name}."
             )
+            messages.success(self.request, f"Processed Inventory Successfully Product Name:{product} | Quantity:{quantity} | Location:{stock_location}")
             return redirect(self.success_url)  # Redirect to success URL after updating
         else:
             # If no existing inventory record, save the new form to create it
@@ -550,6 +551,8 @@ def inventory_lookup_view(request):
     user_center_str = str(user_center.storis_Abbreviation)
 
     items = []  # Default empty list for items
+    sorted_items = []
+    
 
     # Initialize the form, passing 'dc' as the user's center abbreviation
     form = InventoryLookup(dc=user_center_str)  # Use the user center abbreviation directly
@@ -560,7 +563,8 @@ def inventory_lookup_view(request):
             stock_location = form.cleaned_data['stock_location']
             # Filter Inventory based on selected stock location
             items = Inventory.objects.filter(stock_location=stock_location)
-            sorted_items = items.order_by('product')
+            sorted_items = items.order_by('stock_loc_level','product')
+            
 
     return render(request, "inventory_lookup.html", {
         "form": form,

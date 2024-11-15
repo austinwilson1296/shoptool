@@ -29,8 +29,7 @@ class CheckoutForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         dc = kwargs.pop('dc', None)  # Get the passed distribution center abbreviation
         super().__init__(*args, **kwargs)
-        for key,value in self.data.items():
-            print(key,value)
+        
         # Set initial value for center from the user’s profile
         if dc:
             try:
@@ -73,9 +72,6 @@ class ProductForm(forms.ModelForm):
         # Get the distribution center from initial data or context
         distribution_center = str(self.initial.get('distribution_center', None))
         
-        # Debug print for verifying the distribution center value
-        print(f"Distribution Center: {distribution_center}")
-
         # Check if distribution_center is provided and assign appropriate choices
         if distribution_center == '710':
             self.fields['stock_location'].choices = CABINET_CHOICES_710
