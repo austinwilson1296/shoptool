@@ -1,73 +1,100 @@
-.nav-link{
-    color: white;
-    font-size: 10px;
-}
-
-body{
+/* General body styling */
+body {
     background-color: #FFF8E8;
-    background-size: cover; /* Adjusts image size to cover the entire page */
-    background-position: center; /* Centers the image */
-     /* Prevents image from repeating */
+    background-size: cover;
+    background-position: center;
     color: black;
-    font-weight:bold;
+    font-weight: bold;
     font-family: "Times New Roman", Times, serif;
 }
 
-th,td {
-    color: black;
+/* Navbar styles */
+.navbar-nav .nav-link {
+    color: white;
+    font-size: 20px;
+}
+.navbar-nav .nav-link:hover {
+    color: #ffd700;
+}
+
+/* Table styles */
+table {
+    background-color: #FFEEA9;
+    border-collapse: collapse;
+    width: auto;
+}
+
+/* Table headers and cells styling */
+th, td {
+    
     font-weight: bold;
     font-size: 13px;
-    width:0.1%;
+    width: 0.1%;
     white-space: nowrap;
 }
-table{
-background:#FFEEA9;
+
+/* Links inside the table */
+table a {
+    color: white; /* Bright Yellow */
+    text-decoration: none;
+}
+table a:hover {
+    color: #674636; /* Light Cyan */
+    text-decoration: underline;
 }
 
-        .navbar-brand img {
-            height: 40px; /* Adjust the height of the image */
-            width: auto;  /* Maintain aspect ratio */
-        }
-        .navbar-nav .nav-link {
-            color: white; /* Text color */
-            font-size: 20px;
-        }
-        .navbar-nav .nav-link:hover {
-            color: #ffd700; /* Hover color */
-        }
+/* Input group styling */
+.input-group {
+    margin-bottom: 1rem;
+}
+.input-group-text {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+}
+#searchBar {
+    border-radius: 0;
+}
 
-  .input-group {
-            margin-bottom: 1rem; /* Margin below the input group */
-        }
-        .input-group-text {
-            background-color: #f8f9fa; /* Light background for the text */
-            border: 1px solid #ced4da; /* Border color for better visibility */
-        }
-        #searchBar {
-            border-radius: 0; /* Remove border radius for a cleaner look */
-        }
+/* Conditional text color for stock availability */
+.sufficient {
+    color: green;
+}
+.insufficient {
+    color: red;
+}
 
-          table a {
-            color: #2D080A; /* Bright Yellow */
-            text-decoration: none; /* Remove underline */
-        }
-        table a:hover {
-            color: #674636; /* Light Cyan on hover */
-            text-decoration: underline; /* Underline on hover for clarity */
-        }
+/* Navbar brand image styling */
+.navbar-brand img {
+    height: 40px;
+    width: auto;
+}
 
-        .sufficient{
-        color:green
-        }
-         .insufficient{
-        color:red;
-        }
+/* Row background colors for distribution centers */
+.dc-710 {
+    background-color: #E3B505 !important; /* Added !important to ensure override */
+}
 
-        .homenav{
-           color: black; /* Bright Yellow */
-            text-decoration: none; /* Remove underline */
-        }
-        table{
-            border-collapse: collapse; /* Collapse borders to make it look better */
-            width: auto; /* Allows the table to adjust its width */
-        }
+.dc-730 {
+    background-color: #1F9EFF;
+    color: white;
+}
+
+.dc-750 {
+    background-color: #9A8BBB;
+    color: white;
+}
+
+/* Adjust navbar link color when hovered */
+.navbar-nav .nav-link:hover {
+    color: #ffd700;
+}
+
+/* Link styles for the homepage navigation */
+.homenav {
+    color: black;
+    text-decoration: none;
+}
+.homenav:hover {
+    color: #674636;
+    text-decoration: underline;
+}
