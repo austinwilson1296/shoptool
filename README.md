@@ -25,11 +25,11 @@ The Supply Dashboard is a web application that allows our distribution centers t
 * Technician usage reporting.
 	* Can filter by start date-end date , Technician date.
 	* Interactive chart with drill down capability.
+* Transaction timestamps for receiving/checkouts/transfers
 
 
 
 ### Future Updates:
-* Transaction timestamps for receiving/checkouts/transfers
 * Adding user approval for supplies requests
 * Additional analytics
 	* Usage report by product 
