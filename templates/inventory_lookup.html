@@ -18,7 +18,7 @@
 
     <h2>Items in Selected Location</h2>
     {% if items %}
-        <table class="table table-striped">
+        <table class="table table-striped" id="itemsTable">
             <thead>
                 <tr>
                     <th>Product</th>
@@ -28,15 +28,30 @@
             </thead>
             <tbody>
                 {% for item in items %}
-                    <tr>
-                        <td>{{ item.product }}</td>
-                        <td>{{ item.quantity }}</td>
-                        <td>{{ item.stock_loc_level }}</td>
-                    </tr>
+                    {% if item.quantity > 0 %}
+                        <tr>
+                            <td>{{ item.product }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>{{ item.stock_loc_level }}</td>
+                        </tr>
+                    {% endif %}
                 {% endfor %}
             </tbody>
         </table>
+        <button class="btn btn-success" onclick="printTable()">Print Table</button>
     {% else %}
         <p>No items found in this location.</p>
     {% endif %}
+
+    <script type="text/javascript">
+        function printTable() {
+            // Open the print dialog
+            var printContents = document.getElementById('itemsTable').outerHTML;
+            var originalContents = document.body.innerHTML;
+
+            document.body.innerHTML = printContents;
+            window.print();
+            document.body.innerHTML = originalContents;
+        }
+    </script>
 {% endblock %}
