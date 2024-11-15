@@ -17,7 +17,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Sum, F, FloatField, ExpressionWrapper
 from django.template import Context,Engine
 from django.template.loader import render_to_string
-from .forms import CheckoutForm, ProductForm, FilteredCheckoutForm,TransferForm
+from .forms import CheckoutForm, ProductForm, FilteredCheckoutForm,TransferForm,InventoryLookup
 from .models import Inventory, Product, Checkout, CheckedOutBy, Center,Vendor,UserProfile
 from .utils import record_transaction
 
@@ -541,3 +541,27 @@ def transfer_inventory_view(request):
 #TO-DO - Supply request forms. User auth not required. 
 
 #TO-DO - Additional Analytics? Check out items and cost per team member | Top 10 most checked out items w cost. 
+
+#TO-DO - Product in location lookup. 
+@login_required
+def inventory_lookup_view(request):
+    # Get the user's associated distribution center
+    user_center = request.user.userprofile.distribution_center  # Assuming this returns a Center instance
+    user_center_str = str(user_center.storis_Abbreviation)
+
+    items = []  # Default empty list for items
+
+    # Initialize the form, passing 'dc' as the user's center abbreviation
+    form = InventoryLookup(dc=user_center_str)  # Use the user center abbreviation directly
+    
+    if request.method == "POST":
+        form = InventoryLookup(request.POST, dc=user_center_str)  # Pass 'dc' to filter stock locations
+        if form.is_valid():
+            stock_location = form.cleaned_data['stock_location']
+            # Filter Inventory based on selected stock location
+            items = Inventory.objects.filter(stock_location=stock_location)
+
+    return render(request, "inventory_lookup.html", {
+        "form": form,
+        "items": items,
+    })

@@ -12,5 +12,6 @@ urlpatterns = [
     path('chart/', checkout_chart_view,name='checkout_chart'),
     path('get_inventory_items/', get_inventory_items, name='get_inventory_items'),
     path('ajax/load-checked-out-by/', load_checked_out_by, name='ajax_load_checked_out_by'),
-    path('transfer-inventory/', transfer_inventory_view, name='transfer_inventory')
+    path('transfer-inventory/', transfer_inventory_view, name='transfer_inventory'),
+    path('inventory_lookup/',inventory_lookup_view,name='inventory_lookup_view')
 ]

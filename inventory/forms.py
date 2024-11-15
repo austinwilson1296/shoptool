@@ -129,3 +129,26 @@ class TransferForm(forms.Form):
         self.fields['inventory_item'].widget.attrs.update({'class': 'select2'})
         self.fields['stock_location'].widget.attrs.update({'class': 'select2'})
         self.fields['stock_loc_level'].widget.attrs.update({'class': 'select2'})
+
+
+
+class InventoryLookup(forms.Form):
+    stock_location = forms.ChoiceField(choices=[], label="Select Cabinet to Lookup")
+    
+    def __init__(self, *args, **kwargs):
+        dc = kwargs.pop('dc', None)  # Distribution center passed in initialization
+        super().__init__(*args, **kwargs)
+
+        # Dynamically set choices for stock_location based on the provided dc
+        if dc == '710':
+            self.fields['stock_location'].choices = CABINET_CHOICES_710
+        elif dc == '730':
+            self.fields['stock_location'].choices = CABINET_CHOICES_730
+        elif dc == '750':
+            self.fields['stock_location'].choices = CABINET_CHOICES_750
+        else:
+            self.fields['stock_location'].choices = []
+
+        # Apply select2 styling, if needed
+        self.fields['stock_location'].widget.attrs.update({'class': 'select2'})
+        

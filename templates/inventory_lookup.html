@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Cabinet Lookup
+{% endblock %}
+
+{% block content %}
+    {% load crispy_forms_tags %}
+
+    <h1>Cabinet Lookup</h1>
+
+    <!-- Form for selecting stock location -->
+    <form method="post">
+        {% csrf_token %}
+        {{ form|crispy }}  <!-- This renders the form with crispy-forms styling -->
+        <button type="submit" class="btn btn-primary">Lookup</button>
+    </form>
+
+    <h2>Items in Selected Location</h2>
+    {% if items %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Level</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                    <tr>
+                        <td>{{ item.product }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.stock_loc_level }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No items found in this location.</p>
+    {% endif %}
+{% endblock %}

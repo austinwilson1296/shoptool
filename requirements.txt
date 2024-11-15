@@ -1,17 +1,20 @@
 asgiref==3.8.1
 beautifulsoup4==4.12.3
+certifi==2024.8.30
+charset-normalizer==3.4.0
 crispy-bootstrap4==2024.1
 crispy-bootstrap5==2024.2
 diff-match-patch==20230430
 dj-database-url==2.2.0
 dj-email-url==1.0.6
-Django
+Django==4.2.16
 django-bootstrap-v5==1.0.11
 django-cache-url==3.4.5
 django-crispy-forms==2.3
 django-import-export==4.1.0
 environs==11.0.0
 gunicorn==20.1.0
+idna==3.10
 marshmallow==3.21.3
 numpy==2.1.0
 packaging==24.1
@@ -22,6 +25,8 @@ psycopg-binary==3.1.19
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 pytz==2024.1
+requests==2.32.3
+setuptools==75.3.0
 six==1.16.0
 soupsieve==2.5
 sqlparse==0.5.0
@@ -29,4 +34,5 @@ tablib==3.5.0
 tenacity==9.0.0
 typing_extensions==4.12.2
 tzdata==2024.1
+urllib3==2.2.3
 whitenoise==6.7.0
