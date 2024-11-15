@@ -1,19 +1,21 @@
- 
-## Project Description:
+
+# Project Description
+
 The Supply Dashboard is a web application that allows our distribution centers to track shop supplies and usage across all distribution centers. This will allow us to control spending/usage and order supplies more efficiently. 
 
-### Technologies Used:
+## Technologies Used
+
 * Django
 * Fly.io
 * Postgres
 
+### Core features include
 
-### Core features include:
 * User Authentication System for each Distribution Center Location.
-* Center based restrictions for adding and removing items. 
-* Receiving supplies into pre-defined storage locations 
-* Moving stock between locations. 
-* Checking out items coupled with technician name for reporting on usage. 
+* Center based restrictions for adding and removing items.
+* Receiving supplies into pre-defined storage locations
+* Moving stock between locations.
+* Checking out items coupled with technician name for reporting on usage.
 * Home page dashboard to display all inventory across centers and a high level overview of cost and item count. 
 * Links to all shop documentation via WISE and Operational Excellence sharepoint pages.
 * Link to Operation Expenses report.
@@ -27,9 +29,8 @@ The Supply Dashboard is a web application that allows our distribution centers t
 	* Interactive chart with drill down capability.
 * Transaction timestamps for receiving/checkouts/transfers
 
+### Future Updates
 
-
-### Future Updates:
 * Adding user approval for supplies requests
 * Additional analytics
 	* Usage report by product 
