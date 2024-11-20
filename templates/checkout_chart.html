@@ -1,5 +1,7 @@
-{% extends 'base.html'%}
+{% extends 'base.html' %}
+
 {% block title %} Checkout Charting {% endblock %}
+
 {% block content %}
 <!-- Container for Date Pickers and Filter Button -->
 <div class="container mt-4">
@@ -34,21 +36,37 @@
 
     <!-- Chart Container -->
     <div id="chart_container">
-        {{ chart_html|safe }}
+        {{ chart_quantity_html|safe }}
+    </div>
+    <div>
+        {{ chart_table_html|safe }}
+    </div>
+    <div>
+        {{ chart_items_html|safe}}
     </div>
 </div>
 
+<!-- Ensure jQuery and Plotly are defined in base.html, remove if already there -->
+<!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/plotly.js"></script> -->
 
 <script>
     $(document).ready(function() {
-        flatpickr("#start_date", {
-            dateFormat: "m/d/Y",  // Set your desired format
-            allowInput: true
-        });
-        flatpickr("#end_date", {
-            dateFormat: "m/d/Y",  // Set your desired format
-            allowInput: true
-        });
+        if (typeof $ !== 'undefined') {
+            console.log('jQuery is loaded');
+            // Your flatpickr initialization or other jQuery-dependent code
+            flatpickr("#start_date", {
+                dateFormat: "m/d/Y",
+                allowInput: true
+            });
+            flatpickr("#end_date", {
+                dateFormat: "m/d/Y",
+                allowInput: true
+            });
+        } else {
+            console.error('jQuery is not loaded');
+        }
     });
 </script>
+
 {% endblock %}

@@ -398,54 +398,116 @@ def checkout_chart_view(request):
     if end_date:
         filters['checkout_date__date__lte'] = end_date
 
-    # Query the checkouts with filtering based on the selected name and date range
+    # Query the checkouts with filtering
     checkouts = Checkout.objects.filter(**filters).annotate(
         checkout_date_only=F('checkout_date__date'),
+        product_name=F('inventory_item__product__name'),
         product_cost=F('inventory_item__product__cost')
     ).values(
         'checkout_date_only',
-        'checked_out_by__name'
+        'checked_out_by__name',
+        'product_name'
     ).annotate(
         total_quantity=Sum('quantity'),
         total_cost=Sum(F('quantity') * F('product_cost'))
     ).order_by('checkout_date_only')
 
-    # Generate random colors for each unique name
+    # ------------------ Chart 1: Bar Chart of Quantities by Date ------------------
     unique_names = set(checkout['checked_out_by__name'] for checkout in checkouts)
-    color_map = {name: random_color() for name in unique_names}
+    fig_quantity = go.Figure()
 
-    # Create the Plotly figure
-    fig = go.Figure()
-
-    # Add a bar chart trace for each name
     for name in unique_names:
-        marker_color = color_map[name]
         name_checkouts = [c for c in checkouts if c['checked_out_by__name'] == name]
         dates = [c['checkout_date_only'] for c in name_checkouts]
         quantities = [c['total_quantity'] for c in name_checkouts]
 
-        fig.add_trace(go.Bar(
+        fig_quantity.add_trace(go.Bar(
             x=dates,
             y=quantities,
-            name=name,
-            marker_color=marker_color
+            name=name
         ))
 
-    # Update layout
-    fig.update_layout(
+    fig_quantity.update_layout(
         xaxis_title='Date',
         yaxis_title='Quantity',
         title='Checkout Quantity by Date',
         barmode='stack',
         legend_title='Names'
     )
+    chart_quantity_html = fig_quantity.to_html(full_html=False)
 
-    # Convert to HTML
-    chart_html = fig.to_html(full_html=False)
+    # ------------------ Chart 2: Table of Costs and Percentages ------------------
+    names_list = list(unique_names)
+    total_costs = [
+        sum(c['total_cost'] for c in checkouts if c['checked_out_by__name'] == name)
+        for name in names_list
+    ]
+    grand_total_cost = sum(total_costs)
+    percentages = [
+        (cost / grand_total_cost) * 100 if grand_total_cost > 0 else 0
+        for cost in total_costs
+    ]
 
-    # Render the template with the chart and names
+    # Sort by total cost in descending order
+    data = sorted(
+        zip(names_list, total_costs, percentages),
+        key=lambda x: x[1],  # Sort by total cost
+        reverse=True  # Descending order
+    )
+    sorted_names, sorted_costs, sorted_percentages = zip(*data)
+
+    fig_table = go.Figure(data=[
+        go.Table(
+            header=dict(
+                values=["Name", "Total Cost", "Percentage of Total"],
+                fill_color='paleturquoise',
+                align='left'
+            ),
+            cells=dict(
+                values=[
+                    sorted_names,
+                    sorted_costs,
+                    [f"{p:.2f}%" for p in sorted_percentages]
+                ],
+                fill_color='lavender',
+                align='left'
+            )
+        )
+    ])
+    chart_table_html = fig_table.to_html(full_html=False)
+
+    # ------------------ Chart 3: Most Frequently Checked-Out Items ------------------
+    product_data = (
+        Checkout.objects.filter(**filters)
+        .annotate(product_name=F('inventory_item__product__name'))
+        .values('product_name')
+        .annotate(total_quantity=Sum('quantity'))
+        .order_by('-total_quantity')[:10]
+    )
+    
+    product_names = [p['product_name'] for p in product_data]
+    product_quantities = [p['total_quantity'] for p in product_data]
+
+    fig_items = go.Figure(data=[
+        go.Bar(
+            x=product_names,
+            y=product_quantities,
+            marker_color='skyblue'
+        )
+    ])
+    fig_items.update_layout(
+        xaxis_title='Product Name',
+        yaxis_title='Total Quantity',
+        title='Most Frequently Checked-Out Items',
+        xaxis=dict(tickangle=45)
+    )
+    chart_items_html = fig_items.to_html(full_html=False)
+
+    # ------------------ Render Template ------------------
     return render(request, 'checkout_chart.html', {
-        'chart_html': chart_html,
+        'chart_quantity_html': chart_quantity_html,
+        'chart_table_html': chart_table_html,
+        'chart_items_html': chart_items_html,
         'names': names,
         'selected_name': selected_name,
         'start_date': start_date_str,
