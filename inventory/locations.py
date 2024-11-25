@@ -45,4 +45,9 @@ LEVEL_CHOICES = [
     ('LEVEL4', 'Level 4'),
     ('LEVEL5', 'Level 5'),
     ('LEVEL6', 'Level 6'),
+    ('LEVEL7', 'Level 7'),
+    ('LEVEL8', 'Level 8'),
+    ('LEVEL9', 'Level 9'),
+    ('LEVEL10', 'Level 10'),
+    ('LEVEL11', 'Level 11'),
 ]
