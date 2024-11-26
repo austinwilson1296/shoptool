@@ -6,6 +6,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 from io import StringIO
 from datetime import datetime
+from collections import defaultdict
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render,redirect, get_object_or_404
@@ -408,60 +409,63 @@ def checkout_chart_view(request):
     # Query the checkouts with filtering
     checkouts = Checkout.objects.filter(**filters).annotate(
         checkout_date_only=F('checkout_date__date'),
-        product_name=F('inventory_item__product__name'),
         product_cost=F('inventory_item__product__cost')
     ).values(
         'checkout_date_only',
-        'checked_out_by__name',
-        'product_name'
+        'checked_out_by__name'
     ).annotate(
         total_quantity=Sum('quantity'),
         total_cost=Sum(F('quantity') * F('product_cost'))
     ).order_by('checkout_date_only')
 
-    # ------------------ Chart 1: Bar Chart of Quantities by Date ------------------
-    unique_names = set(checkout['checked_out_by__name'] for checkout in checkouts)
+    # Group data by person and then by date
+    quantities_by_person_and_date = defaultdict(lambda: defaultdict(int))
+    for checkout in checkouts:
+        person = checkout['checked_out_by__name']
+        date = checkout['checkout_date_only']
+        quantities_by_person_and_date[person][date] += float(checkout['total_quantity'])
+
+    # Create a bar chart
     fig_quantity = go.Figure()
 
-    for name in unique_names:
-        name_checkouts = [c for c in checkouts if c['checked_out_by__name'] == name]
-        dates = [c['checkout_date_only'] for c in name_checkouts]
-        quantities = [c['total_quantity'] for c in name_checkouts]
-
+    for person, date_quantities in quantities_by_person_and_date.items():
+        dates = list(date_quantities.keys())
+        quantities = list(date_quantities.values())
         fig_quantity.add_trace(go.Bar(
             x=dates,
             y=quantities,
-            name=name
+            name=person
         ))
 
     fig_quantity.update_layout(
         xaxis_title='Date',
-        yaxis_title='Quantity',
-        title='Checkout Quantity by Date',
+        yaxis_title='Total Quantity',
+        title='Total Checkout Quantity by Person and Date',
         barmode='stack',
-        legend_title='Names'
+        legend_title='Person'
     )
+
     chart_quantity_html = fig_quantity.to_html(full_html=False)
 
     # ------------------ Chart 2: Table of Costs and Percentages ------------------
-    names_list = list(unique_names)
-    total_costs = [
-        sum(c['total_cost'] for c in checkouts if c['checked_out_by__name'] == name)
-        for name in names_list
-    ]
-    grand_total_cost = sum(total_costs)
-    percentages = [
-        (cost / grand_total_cost) * 100 if grand_total_cost > 0 else 0
-        for cost in total_costs
-    ]
+    total_costs_by_person = defaultdict(float)
+    for checkout in checkouts:
+        total_costs_by_person[checkout['checked_out_by__name']] += float(checkout['total_cost'])
 
-    # Sort by total cost in descending order
-    data = sorted(
-        zip(names_list, total_costs, percentages),
-        key=lambda x: x[1],  # Sort by total cost
-        reverse=True  # Descending order
+    grand_total_cost = sum(total_costs_by_person.values())
+    percentages_by_person = {
+        name: (cost / grand_total_cost) * 100 if grand_total_cost > 0 else 0
+        for name, cost in total_costs_by_person.items()
+    }
+
+    sorted_data = sorted(
+        total_costs_by_person.items(),
+        key=lambda x: x[1],
+        reverse=True
     )
-    sorted_names, sorted_costs, sorted_percentages = zip(*data)
+
+    sorted_names, sorted_costs = zip(*sorted_data)
+    sorted_percentages = [percentages_by_person[name] for name in sorted_names]
 
     fig_table = go.Figure(data=[
         go.Table(
