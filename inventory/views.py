@@ -5,6 +5,7 @@ from datetime import datetime
 import plotly.graph_objects as go
 import plotly.express as px
 from io import StringIO
+from datetime import datetime
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render,redirect, get_object_or_404
@@ -159,9 +160,9 @@ def checkout_inventory_view(request):
 
         if form.is_valid():
             center = form.cleaned_data['center']
-          
             item = form.cleaned_data['inventory_item']
             quantity_checkout = form.cleaned_data['quantity']
+            checked_out_by = form.cleaned_data['checked_out_by']
             
             # Validate that the user is allowed to check out from the given center
             if user_center_str == str(center):
@@ -169,7 +170,13 @@ def checkout_inventory_view(request):
                 if quantity_checkout <= item.quantity:
                     item.quantity -= quantity_checkout
                     item.save()  # Update the inventory item quantity
-
+                    Checkout.objects.create(
+                        inventory_item=item,
+                        checked_out_by=checked_out_by,  # Assuming CheckedOutBy is linked to UserProfile
+                        checkout_date=datetime.now(),
+                        quantity=quantity_checkout,
+                        user=request.user
+                    )
                     # Record the checkout transaction (similar to the transfer)
                     record_transaction(
                         action='checkout',
