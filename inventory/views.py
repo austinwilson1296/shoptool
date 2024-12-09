@@ -450,7 +450,8 @@ def checkout_chart_view(request):
     # ------------------ Chart 2: Table of Costs and Percentages ------------------
     total_costs_by_person = defaultdict(float)
     for checkout in checkouts:
-        total_costs_by_person[checkout['checked_out_by__name']] += float(checkout['total_cost'])
+        rounded_cost = round(float(checkout['total_cost']), 2)
+        total_costs_by_person[checkout['checked_out_by__name']] += rounded_cost
 
     grand_total_cost = sum(total_costs_by_person.values())
     percentages_by_person = {
