@@ -13,5 +13,9 @@ urlpatterns = [
     path('get_inventory_items/', get_inventory_items, name='get_inventory_items'),
     path('ajax/load-checked-out-by/', load_checked_out_by, name='ajax_load_checked_out_by'),
     path('transfer-inventory/', transfer_inventory_view, name='transfer_inventory'),
-    path('inventory_lookup/',inventory_lookup_view,name='inventory_lookup_view')
+    path('inventory_lookup/',inventory_lookup_view,name='inventory_lookup_view'),
+    path('supply_request/',supply_request,name='supply_request'),
+    path('submit-request/', submit_request, name='submit_request'),
+    path('approve/', approve_request, name='approve_request'),
+    path('deny/', deny_request, name='deny_request'),
 ]

@@ -22,6 +22,9 @@ from django.template.loader import render_to_string
 from .forms import CheckoutForm, ProductForm, FilteredCheckoutForm,TransferForm,InventoryLookup
 from .models import Inventory, Product, Checkout, CheckedOutBy, Center,Vendor,UserProfile
 from .utils import record_transaction
+from .email_handler import send_supply_request
+
+EMAIL_APPROVERS = ["bdussault@shopashley.com","jotero@shopashley.com","awilson@shopashley.com"]
 
 
 class HomePageView(LoginRequiredMixin, ListView):
@@ -609,12 +612,62 @@ def transfer_inventory_view(request):
     return render(request, 'b2b.html', {'form': form})
 #TO-DO - Add views for creating/viewing/receiving/completing transfers between locations.
 
-#TO-DO - Inventory views for each storage location.
+
 
 #TO-DO - Add view inside of the checkout and create views to show on hand items and where they currently are.
 
 #TO-DO - Supply request forms. User auth not required. 
+def supply_request(request):
+    return render(request,'email.html')
 
+
+def submit_request(request):
+    # Get form data
+    name = request.POST['name']
+    email = request.POST['email']
+    supplies = request.POST['supplies']
+    cleaned_name = name.replace(" ","")
+    print(cleaned_name)
+    # Notify approvers
+    subject = f"Supply Request from {name}"
+    body = f"Requester: {name}\nEmail: {email}\nSupplies Needed:\n{supplies}\n\nApprove or deny via the links below:\n" \
+           f"Approve: https://brrshoptool.com/approve?email={email}&name={cleaned_name}\n" \
+           f"Deny: https://brrshoptool.com/deny?email={email}&name={cleaned_name}"
+    send_supply_request(EMAIL_APPROVERS, subject, body)
+
+    return redirect('supply_request')
+
+def approve_request(request):
+    """Approve the supply request and notify the requester"""
+    email = request.GET.get('email')
+    name = request.GET.get('name')
+
+    if not email or not name:
+        return JsonResponse({"error": "Missing email or name parameters"}, status=400)
+
+    # Notify the requester of approval
+    subject = "Supply Request Approved"
+    body = f"Hi {name},\n\nYour supply request has been approved.\n\nThanks!"
+    send_supply_request([email], subject, body)
+
+    # Redirect or return a success response
+    return JsonResponse({"message": f"Request from {name} has been approved and notified."})
+
+def deny_request(request):
+    """Deny the supply request and notify the requester"""
+    email = request.GET.get('email')
+    name = request.GET.get('name')
+
+    if not email or not name:
+        return JsonResponse({"error": "Missing email or name parameters"}, status=400)
+
+    # Notify the requester of denial
+    subject = "Supply Request Denied"
+    body = f"Hi {name},\n\nYour supply request has been denied. Please contact support for more details.\n\nThanks!"
+    send_supply_request([email], subject, body)
+
+    # Redirect or return a success response
+    return JsonResponse({"message": f"Request from {name} has been denied and requester notified."})
 #TO-DO - Additional Analytics? Check out items and cost per team member | Top 10 most checked out items w cost. 
 
 #TO-DO - Product in location lookup. 
