@@ -481,7 +481,7 @@ def checkout_chart_view(request):
             cells=dict(
                 values=[
                     sorted_names,
-                    sorted_costs,
+                    [f"${c:.2f}" for c in sorted_costs],
                     [f"{p:.2f}%" for p in sorted_percentages]
                 ],
                 fill_color='lavender',
