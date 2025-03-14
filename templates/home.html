@@ -1,11 +1,13 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block title %}Home Page{% endblock %}
 
 {% block content %}
 <div class="container pt-3">
+    <div class="text-center mb-3">
+        <img src="{% static 'images/nstar_banner.png' %}" alt="Banner">
+    </div>
     <div class="row">
-        <!-- Left column: Search and Table (spans 6 columns) -->
         <div class="col-md-6">
             <!-- Search Input -->
             <div class="mb-3">
@@ -80,8 +82,8 @@
                     </tbody>
                 </table>
 
-                <h2 style="color:black">Shop Supply Dashboard</h2>
-                <p>Important information and links!</p>
+                <h2 style="color:black">Important information and links!</h2>
+                
                 <!-- You can add more content here like news articles, updates, etc. -->
                 <ul>
                     <li><a class="homenav" href="https://www.ashleydirect.com/SiteLogin/Forms/Login.aspx" target="_blank">Ashley Direct</a></li>
