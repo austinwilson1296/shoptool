@@ -39,3 +39,6 @@ The Supply Dashboard is a web application that allows our distribution centers t
 * Supply Transfers between distribution centers 
 * Barcode scanning 
 * Additional Analytics (Top 10 Products, Receiving per DC, etc..)
+
+
+## Contributing
