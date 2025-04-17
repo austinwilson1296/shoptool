@@ -15,3 +15,10 @@ def record_transaction(action, inventory_item, quantity, user, notes=""):
         user_center=user_center,  # Store the center name or ID if needed
         notes=notes
     )
+
+def verify_user_dist(user,request):
+    user_center = request.user.userprofile.distribution_center
+    
+    user_center_str = str(user_center.storis_Abbreviation)
+
+    return user_center_str

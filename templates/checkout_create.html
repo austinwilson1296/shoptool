@@ -2,7 +2,7 @@
 {% block title %} Checkout Product {% endblock %}
 {% load crispy_forms_tags %}
 {% block content %}
-<div class="col-md-9">
+<div class="containter mt-4" id="container-background-checkout-create">
     <div class="container mt-0 mb-3">
         <h2>Checkout Item</h2>
 
@@ -17,7 +17,7 @@
             {{ form|crispy }}
             <button type="submit" onclick="return confirm('Select OK to confirm.\nSelect Cancel to review.')" class="btn btn-primary">Checkout</button>
         </form>
-        </br>
+        
     </div>
 </div>
 

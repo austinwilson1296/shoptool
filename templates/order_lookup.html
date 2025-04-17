@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Order Lookup: {{ object.order_number }}{% endblock %}
+
+{% block content %}
+    <div>
+    <h3 class="display-6">{{ object.order_number }}</h3>
+    <table class = "table-dark" id="order_table">
+        <thead class="thead-dark">
+    <tr>
+        <th>Order Number:</th>
+        <th>Distribution Center:</th>
+        <th>Order Date:</th>
+        <th>Status:</th>
+        <th>Technician:</th>
+        <th>Serial Number:</th>
+    </tr>
+    </thead>
+    <tr>
+        <td>{{ object.order_number }}</td>
+        <td>{{ object.distribution_center }}</td>
+        <td>{{ object.order_date }}</td>
+        <td>{{ object.status }}</td>
+        <td>{{ object.technician }}</td>
+        <td>{{ object.serial_number }}</td>
+
+    </tr>
+    </table>
+    </div>
+    {% endblock %}

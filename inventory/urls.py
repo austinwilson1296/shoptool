@@ -18,4 +18,7 @@ urlpatterns = [
     path('submit-request/', submit_request, name='submit_request'),
     path('approve/', approve_request, name='approve_request'),
     path('deny/', deny_request, name='deny_request'),
+    path('part_order/', PartsOrderView.as_view(), name='parts_order_view'),
+    path('part_order/<int:pk>/', OrderDetailView.as_view(), name='order_lookup')
+
 ]

@@ -109,3 +109,22 @@ class TransactionHistory(models.Model):
         timestamp_est = self.timestamp.astimezone(est)  # Convert to EST
         return timestamp_est.strftime('%Y-%m-%d %H:%M:%S')  # Format the timestamp
 
+class PartsOrder(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+    technician = models.ForeignKey(CheckedOutBy, on_delete=models.CASCADE)
+    distribution_center = models.ForeignKey(Center, on_delete=models.CASCADE)
+    order_date = models.DateTimeField(default=timezone.now)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    order_number = models.CharField(max_length=50, unique=True, null=False)
+    serial_number = models.CharField(max_length=50, null=False)
+
+    def __str__(self):
+        return f'{self.order_number} - {self.order_date}'
+
+    @property
+    def older_than_90_days(self):
+        return (timezone.now() - self.order_date).days > 90

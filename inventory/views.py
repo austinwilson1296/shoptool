@@ -10,17 +10,15 @@ from collections import defaultdict
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render,redirect, get_object_or_404
-from django.http import HttpResponse,JsonResponse,HttpResponseForbidden
+from django.http import HttpResponse,JsonResponse
 from django.core.exceptions import ValidationError
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Sum, F, FloatField, ExpressionWrapper
-from django.template import Context,Engine
-from django.template.loader import render_to_string
-from .forms import CheckoutForm, ProductForm, FilteredCheckoutForm,TransferForm,InventoryLookup
-from .models import Inventory, Product, Checkout, CheckedOutBy, Center,Vendor,UserProfile
+from .forms import CheckoutForm, ProductForm, TransferForm,InventoryLookup,PartsOrderForm
+from .models import Inventory, Product, Checkout, CheckedOutBy, Center,Vendor, PartsOrder
 from .utils import record_transaction
 from .email_handler import send_supply_request
 
@@ -529,17 +527,6 @@ def checkout_chart_view(request):
         'end_date': end_date_str
     })
 
-#TO-DO - Add views for transferring inventory between storage locations.(BIN2BIN)
-'''
-1. Select item to transfer along with DC 
-2.Enter quantity to transfer 
-3.Location to transfer to.
-
-REQUIREMENTS:
-- Form that displays all inventory for a given location.
-- Quantity to subtract from/add to selected location (along with product_name)
-- List of locations in the available DC 
-'''
 @login_required
 def transfer_inventory_view(request):
     # Get the user's distribution center abbreviation (string) for dropdown population
@@ -610,13 +597,8 @@ def transfer_inventory_view(request):
         form = TransferForm(dc=user_center_str)  # Pass the abbreviation string to the form
 
     return render(request, 'b2b.html', {'form': form})
-#TO-DO - Add views for creating/viewing/receiving/completing transfers between locations.
 
 
-
-#TO-DO - Add view inside of the checkout and create views to show on hand items and where they currently are.
-
-#TO-DO - Supply request forms. User auth not required. 
 def supply_request(request):
     return render(request,'email.html')
 
@@ -668,9 +650,7 @@ def deny_request(request):
 
     # Redirect or return a success response
     return JsonResponse({"message": f"Request from {name} has been denied and requester notified."})
-#TO-DO - Additional Analytics? Check out items and cost per team member | Top 10 most checked out items w cost. 
 
-#TO-DO - Product in location lookup. 
 @login_required
 def inventory_lookup_view(request):
     # Get the user's associated distribution center
@@ -697,3 +677,53 @@ def inventory_lookup_view(request):
         "form": form,
         "items": sorted_items,
     })
+
+
+class PartsOrderView(LoginRequiredMixin, CreateView):
+    model = PartsOrder
+    template_name = "hfp.html"
+    form_class = PartsOrderForm
+    success_url = reverse_lazy('parts_order_view')
+
+    def get_initial(self):
+        initial = super().get_initial()
+        user_center = self.request.user.userprofile.distribution_center
+        initial['center'] = user_center
+        return initial
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        dc = self.request.user.userprofile.distribution_center.storis_Abbreviation
+        kwargs['dc'] = dc
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_center = self.request.user.userprofile.distribution_center
+        context['part_data'] = PartsOrder.objects.filter(
+            distribution_center=user_center
+        ).order_by('order_date')  # descending order
+        return context
+
+    def form_valid(self, form):
+        user = self.request.user
+        user_center = user.userprofile.distribution_center
+        selected_center = form.cleaned_data['distribution_center']
+
+        if selected_center != user_center:
+            form.add_error('center', ValidationError(
+                "You are not authorized to perform this action in this distribution center."
+            ))
+            return self.form_invalid(form)
+
+        form.instance.user = user
+        return super().form_valid(form)
+    
+class OrderDetailView(LoginRequiredMixin, DetailView):
+    model = PartsOrder
+    template_name = "order_lookup.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["order"] = self.object  # self.get_object() is already done by DetailView
+        return context

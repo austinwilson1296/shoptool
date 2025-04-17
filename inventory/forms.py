@@ -1,6 +1,6 @@
 # forms.py
 from django import forms
-from .models import Checkout, Inventory, CheckedOutBy,Center,UserProfile
+from .models import Checkout, Inventory, CheckedOutBy,Center,UserProfile,PartsOrder
 from .locations import *
 
 
@@ -148,3 +148,38 @@ class InventoryLookup(forms.Form):
         # Apply select2 styling, if needed
         self.fields['stock_location'].widget.attrs.update({'class': 'select2'})
         
+class PartsOrderForm(forms.ModelForm):
+    distribution_center = forms.ModelChoiceField(
+        queryset=Center.objects.all(),
+        empty_label="Select Center"
+    )
+    technician = forms.ModelChoiceField(
+        queryset=CheckedOutBy.objects.none(),
+        widget=forms.Select(attrs={'class': 'select2'})
+    )
+
+    def __init__(self, *args, **kwargs):
+        dc = kwargs.pop('dc', None)  # passed from view
+        super().__init__(*args, **kwargs)
+
+        if dc:
+            try:
+                user_center = Center.objects.get(storis_Abbreviation=dc)
+                self.fields['distribution_center'].initial = user_center
+                self.fields['technician'].queryset = CheckedOutBy.objects.filter(distribution_center=user_center)
+            except Center.DoesNotExist:
+                pass
+
+        elif 'center' in self.data:
+            try:
+                center_id = int(self.data.get('center'))
+                self.fields['technician'].queryset = CheckedOutBy.objects.filter(distribution_center_id=center_id)
+            except (ValueError, TypeError):
+                pass
+
+    class Meta:
+        model = PartsOrder
+        fields = ['distribution_center', 'technician', 'order_number', 'serial_number']
+
+
+    

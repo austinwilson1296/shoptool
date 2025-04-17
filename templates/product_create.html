@@ -3,7 +3,7 @@
 {% block title %}Add Product{% endblock %}
 {% block content %}
 {%load crispy_forms_tags %}
-<div class="col-md-8">
+<div class="containter mt-4" id="container-background-product-create">
 <div class="container mt-0 mb-3 ">
   {% if messages %}
   {% endif %}
@@ -14,7 +14,7 @@
    
     <button type="submit" onclick="return confirm('Select OK to confirm.\nSelect Cancel to review.')" class="btn btn-primary">Save</button>
   </form>
-    </br>
+    
 </div>
 </div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

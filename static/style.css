@@ -17,6 +17,8 @@ body {
     color: #ffd700;
 }
 
+
+
 /* Table styles */
 table {
     background-color: #FFEEA9;
@@ -150,4 +152,53 @@ table a:hover {
 /* Hover Effect for Button */
 .supply-request-form button:hover {
     background-color: #0056b3;
+}
+
+.order_number a {
+    color:black !important;
+}
+
+#container-background-product-create{
+    background-color:#fff;
+    border-radius: 20px;
+    border-style: groove;
+    box-shadow: 10px, 10px, 20px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    font-size: 20px;
+    margin-top: 50px;
+}
+
+#container-background-checkout-create{
+    background-color:#fff;
+    border-radius: 20px;
+    border-style: groove;
+    box-shadow: 10px, 10px, 20px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    font-size: 20px;
+    margin-top: 50px;
+}
+
+#container-background-part-order{
+    background-color:#fff;
+    border-radius: 20px;
+    border-style: groove;
+    box-shadow: 10px, 10px, 20px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    font-size: 20px;
+    
+}
+#container-background-transfer{
+    background-color:#fff;
+    border-radius: 20px;
+    border-style: groove;
+    box-shadow: 10px, 10px, 20px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    font-size: 20px;
+    margin-top: 50px;
+}
+
+#order_table tr,
+#order_table td,
+#order_table th {
+    color: black;
 }
